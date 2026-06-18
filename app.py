@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from google import genai          # Updated to the new SDK
 from dotenv import load_dotenv
@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
