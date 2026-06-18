@@ -1,3 +1,14 @@
+function navigateTo(stateId) {
+    document.querySelectorAll('.view-state').forEach(state => {
+        state.classList.remove('active-state');
+    });
+
+    const targetState = document.getElementById(stateId);
+    if (targetState) {
+        targetState.classList.add('active-state');
+    }
+}
+
 document.getElementById('auditForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -9,25 +20,22 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
     };
 
     try {
-        submitBtn.innerText = "Querying Database...";
-        submitBtn.disabled = true;
+        navigateTo('state-loader');
 
-        const response = await fetch('http://127.0.0.1:5000/api/audit', {
+        const response = await fetch('/api/audit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error('Data drop failed');
+        if (!response.ok) throw new Error('Data drop matrix failed response check');
         const data = await response.json();
 
-        // 1. Populate elements safely
         document.getElementById('safetyScore').innerText = data.safety_score;
         document.getElementById('perfScore').innerText = data.performance_score;
         document.getElementById('matchedPaper').innerText = data.matched_paper;
         document.getElementById('translationText').innerText = data.translated_consensus;
 
-        // 2. Target the element by its unique ID instead of querySelector to avoid crashing
         const safetyCard = document.getElementById('safetyCard');
         if (safetyCard) {
             if (data.safety_score < 40) {
@@ -39,7 +47,6 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
             }
         }
 
-        // 3. Handle Alternatives Checklist Generation
         const listContainer = document.getElementById('alternativesList');
         listContainer.innerHTML = "";
         data.alternative_steps.forEach(step => {
@@ -48,24 +55,19 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
             listContainer.appendChild(li);
         });
 
-        // 4. Slide the track over smoothly!
-        document.getElementById('analyticsTrack').style.transform = "translateX(-50%)";
+        navigateTo('state-results');
 
     } catch (error) {
-        // Log the actual structural error to the console instead of a generic connection message
         console.error("Application Runtime Exception:", error);
-    } finally {
-        submitBtn.innerText = "Execute Audit Matrix";
-        submitBtn.disabled = false;
+        // Fallback interface management on system exceptions
+        alert("System Execution Fault. Reverting setup context parameters.");
+        navigateTo('state-query');
     }
 });
 
-// Global helper to allow sliding between view states manually
-function slideToState(index) {
-    const track = document.getElementById('analyticsTrack');
-    if (index === 0) {
-        track.style.transform = "translateX(0%)";
-    } else if (index === 1) {
-        track.style.transform = "translateX(-50%)";
-    }
+function resetAuditFlow() {
+    document.getElementById('claim').value = '';
+    document.getElementById('routine').value = '';
+
+    navigateTo('state-query');
 }

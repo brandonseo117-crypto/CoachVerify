@@ -4,82 +4,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoachVerify Dashboard</title>
+    <title>CoachVerify // Sports Science Audit Matrix</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
 
-    <div class="dashboard-container">
+    <main class="app-container">
 
-        <aside class="control-panel">
-            <div class="logo">
-                <h2>COACH<span>VERIFY</span></h2>
+        <section id="state-home" class="view-state active-state">
+            <div class="hero-content">
+                <div class="glitch-logo">COACH<span>VERIFY</span></div>
+                <h1 class="hero-title">Adolescent Sports Science <br>& Supplement Auditing Matrix</h1>
+                <p class="hero-subtitle">Instant plain-English translation of clinical research, customized for
+                    developing athletes.</p>
+                <button class="cta-btn" onclick="navigateTo('state-query')">Initialize Safety Audit</button>
             </div>
+        </section>
 
-            <form id="auditForm">
-                <div class="input-group">
-                    <label for="profile">Athlete Profile</label>
-                    <select id="profile" required>
-                        <option value="Youth Sports (U14)">Youth Sports (U14)</option>
-                        <option value="Junior Varsity">Junior Varsity</option>
-                        <option value="Varsity Athlete" selected>Varsity Athlete</option>
-                    </select>
+        <section id="state-query" class="view-state">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>Audit Parameter Configuration</h2>
+                    <p>Input target routine and tracking metrics below.</p>
                 </div>
 
-                <div class="input-group">
-                    <label for="claim">Trend / Supplement / Product</label>
-                    <input type="text" id="claim" placeholder="e.g., Dry-scooping pre-workout" required>
+                <form id="auditForm">
+                    <div class="input-group">
+                        <label for="profile">Athlete Roster Profile</label>
+                        <select id="profile" required>
+                            <option value="Youth Sports (U14)">Youth Sports (U14)</option>
+                            <option value="Junior Varsity">Junior Varsity</option>
+                            <option value="Varsity Athlete" selected>Varsity Athlete</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="claim">Target Trend / Supplement / Compound</label>
+                        <input type="text" id="claim" placeholder="e.g., Dry-scooping pre-workout" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="routine">Proposed Dosage / Routine Context</label>
+                        <textarea id="routine" rows="4"
+                            placeholder="e.g., Taking 1 full scoop dry right before high-intensity training"
+                            required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn" onclick="navigateTo('state-home')">Return
+                            Home</button>
+                        <button type="submit" id="submitBtn" class="primary-btn">Execute Audit Matrix</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="state-loader" class="view-state">
+            <div class="loader-content">
+                <div class="cyber-spinner"></div>
+                <h2 class="loading-title">Querying Ground-Truth Databases</h2>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
                 </div>
+                <p class="loading-sub">Parsing context gates, running semantic matching, and bypassing academic
+                    jargon...</p>
+            </div>
+        </section>
 
-                <div class="input-group">
-                    <label for="routine">Proposed Routine Details</label>
-                    <textarea id="routine" rows="4" placeholder="e.g., Taking 1 full scoop dry right before training"
-                        required></textarea>
-                </div>
+        <section id="state-results" class="view-state">
+            <div class="results-layout">
 
-                <button type="submit" id="submitBtn">Run Safety Audit</button>
-            </form>
-        </aside>
+                <header class="results-header">
+                    <div class="results-meta">
+                        <span class="status-tag">Audit Verified</span>
+                        <h2 id="matchedPaper">Loading Source Documentation...</h2>
+                    </div>
+                    <button class="secondary-btn" onclick="resetAuditFlow()">New Analysis Matrix</button>
+                </header>
 
-        <main class="results-display">
-
-            <section class="metrics-row">
-                <div class="metric-card" id="safetyCard">
-                    <h3>Safety Rating</h3>
-                    <div class="progress-ring">
-                        <span id="safetyScore">--</span><span class="pct">%</span>
+                <div class="metrics-grid">
+                    <div class="metric-card" id="safetyCard">
+                        <span class="card-label">Biometric Safety Index</span>
+                        <div class="score-display"><span id="safetyScore">--</span><span class="unit">%</span></div>
+                    </div>
+                    <div class="metric-card" id="performanceCard">
+                        <span class="card-label">Performance Efficacy</span>
+                        <div class="score-display"><span id="perfScore">--</span><span class="unit">%</span></div>
                     </div>
                 </div>
 
-                <div class="metric-card" id="performanceCard">
-                    <h3>Performance Impact</h3>
-                    <div class="progress-ring">
-                        <span id="perfScore">--</span><span class="pct">%</span>
+                <div class="details-layout">
+                    <div class="data-panel">
+                        <h3>Clinical Consensus Translation</h3>
+                        <div class="scroll-wrapper">
+                            <p id="translationText">Analyzing data streams...</p>
+                        </div>
+                    </div>
+
+                    <div class="data-panel">
+                        <h3>Coach-Approved Optimization Blueprint</h3>
+                        <div class="scroll-wrapper">
+                            <ul id="alternativesList">
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </section>
 
-            <section class="details-grid">
-                <div class="card consensus-card">
-                    <h3>Clinical Translation Consensus</h3>
-                    <p id="matchedPaper" class="paper-citation">Paper: Waiting for audit...</p>
-                    <p id="translationText" class="main-text">Submit a claim to analyze the sports science matrix data
-                        stream.</p>
-                </div>
+            </div>
+        </section>
 
-                <div class="card alternatives-card">
-                    <h3>Coach-Approved Alternatives</h3>
-                    <ul id="alternativesList">
-                        <li>Submit data to generate vetted optimization alternatives.</li>
-                    </ul>
-                </div>
-            </section>
-
-        </main>
-
-    </div>
-
+    </main>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
