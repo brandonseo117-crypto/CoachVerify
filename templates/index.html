@@ -88,6 +88,14 @@
                         <span class="card-label">Biometric Safety Index</span>
                         <div class="score-display"><span id="safetyScore">--</span><span class="unit">%</span></div>
                     </div>
+
+                    <div class="metric-card reliability-card" id="reliabilityCard">
+                        <span class="card-label">Scientific Reliability Index</span>
+                        <div class="score-display"><span id="reliabilityScore">--</span><span class="unit">%</span>
+                        </div>
+                        <span id="reliabilityBadge" class="reliability-badge">Verifying...</span>
+                    </div>
+
                     <div class="metric-card" id="performanceCard">
                         <span class="card-label">Performance Efficacy</span>
                         <div class="score-display"><span id="perfScore">--</span><span class="unit">%</span></div>
@@ -108,6 +116,13 @@
                             <ul id="alternativesList">
                             </ul>
                         </div>
+                    </div>
+                </div>
+
+                <div class="data-panel source-feed-panel" style="grid-column: span 2;">
+                    <h3>Ground-Truth Literature Breakdown</h3>
+                    <div id="sourcesContainer" class="sources-list-wrapper">
+                        <p class="empty-feed-text">Awaiting clinical verification matrix sequence...</p>
                     </div>
                 </div>
 

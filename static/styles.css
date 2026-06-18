@@ -35,7 +35,7 @@ body {
     height: 100%;
 }
 
-/* 🔒 State Architecture */
+/* State Architecture */
 .view-state {
     position: absolute;
     top: 0;
@@ -240,9 +240,12 @@ body {
 /* ==================== STATE 3: RESULTS DESIGN ==================== */
 #state-results.active-state {
     display: grid;
-    grid-template-rows: auto 160px 1fr;
+    /* Adjusted layout space allocations to include bottom sources view safely */
+    grid-template-rows: auto auto 1fr auto;
     gap: 20px;
     align-items: stretch;
+    overflow-y: auto;
+    /* Makes dashboard perfectly scrollable if screen size is compressed */
 }
 
 .results-layout {
@@ -275,15 +278,18 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* Grid Cards Layout */
-.metrics-grid,
-.details-layout {
+/* ✅ FIXED: Layout grids calibrated separately */
+.metrics-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.1fr 1fr;
+    /* Splitting row precisely into 3 distinct items */
     gap: 16px;
 }
 
 .details-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
     min-height: 0;
 }
 
@@ -322,6 +328,21 @@ body {
 
 #performanceCard {
     color: var(--neon-cyan);
+}
+
+/* ✅ NEW: Central Reliability Identity Accents */
+.reliability-card {
+    border-color: var(--border-glow);
+    align-items: center;
+    text-align: center;
+}
+
+.reliability-badge {
+    margin-top: 8px;
+    font: 700 0.7rem var(--font-mono);
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
 }
 
 .score-display .unit {
@@ -385,4 +406,65 @@ body {
     50% {
         transform: translateX(250%);
     }
+}
+
+/* Literature Feed Structural Container */
+.sources-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.empty-feed-text {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Individual Paper Rows */
+.source-paper-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--bg-sub);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.paper-left-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 75%;
+}
+
+.paper-row-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.paper-row-title:hover {
+    color: var(--neon-cyan);
+    text-decoration: underline;
+}
+
+.paper-row-subtext {
+    font: 0.75rem var(--font-mono);
+    color: var(--text-sub);
+    text-transform: uppercase;
+}
+
+/* Micro-Score pill elements on the right */
+.paper-row-badge {
+    padding: 6px 12px;
+    font: 700 0.8rem var(--font-mono);
+    border-radius: 6px;
+    white-space: nowrap;
 }
