@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoachVerify Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <aside class="control-panel">
+            <div class="logo">
+                <h2>COACH<span>VERIFY</span></h2>
+            </div>
+
+            <form id="auditForm">
+                <div class="input-group">
+                    <label for="profile">Athlete Profile</label>
+                    <select id="profile" required>
+                        <option value="Youth Sports (U14)">Youth Sports (U14)</option>
+                        <option value="Junior Varsity">Junior Varsity</option>
+                        <option value="Varsity Athlete" selected>Varsity Athlete</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="claim">Trend / Supplement / Product</label>
+                    <input type="text" id="claim" placeholder="e.g., Dry-scooping pre-workout" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="routine">Proposed Routine Details</label>
+                    <textarea id="routine" rows="4" placeholder="e.g., Taking 1 full scoop dry right before training"
+                        required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn">Run Safety Audit</button>
+            </form>
+        </aside>
+
+        <main class="results-display">
+
+            <section class="metrics-row">
+                <div class="metric-card" id="safetyCard">
+                    <h3>Safety Rating</h3>
+                    <div class="progress-ring">
+                        <span id="safetyScore">--</span><span class="pct">%</span>
+                    </div>
+                </div>
+
+                <div class="metric-card" id="performanceCard">
+                    <h3>Performance Impact</h3>
+                    <div class="progress-ring">
+                        <span id="perfScore">--</span><span class="pct">%</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="details-grid">
+                <div class="card consensus-card">
+                    <h3>Clinical Translation Consensus</h3>
+                    <p id="matchedPaper" class="paper-citation">Paper: Waiting for audit...</p>
+                    <p id="translationText" class="main-text">Submit a claim to analyze the sports science matrix data
+                        stream.</p>
+                </div>
+
+                <div class="card alternatives-card">
+                    <h3>Coach-Approved Alternatives</h3>
+                    <ul id="alternativesList">
+                        <li>Submit data to generate vetted optimization alternatives.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

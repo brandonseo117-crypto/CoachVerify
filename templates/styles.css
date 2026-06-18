@@ -1,0 +1,238 @@
+:root {
+    --bg-dark: #070A12;
+    --bg-panel: #0E1322;
+    --bg-sub: #141B30;
+    --border-glow: #1F2A47;
+    --neon-green: #00FF87;
+    --neon-red: #FF3366;
+    --neon-cyan: #00DFFA;
+    --text-main: #FFFFFF;
+    --text-sub: #7A8B9E;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* 🏁 Master Layout Wrapper */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    /* Rigid sidebar, expansive right layout */
+    width: 98vw;
+    height: 94vh;
+    gap: 16px;
+}
+
+/* 📋 Left Control Column */
+.control-sidebar {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo h2 {
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    margin-bottom: 35px;
+    font-weight: 800;
+}
+
+.logo span {
+    color: var(--neon-cyan);
+}
+
+.input-group {
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.input-group select,
+.input-group input,
+.input-group textarea {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-glow);
+    padding: 14px;
+    color: white;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.input-group textarea {
+    resize: none;
+}
+
+button {
+    background: linear-gradient(135deg, var(--neon-cyan), #0055FF);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: auto;
+    /* Pushes button cleanly to the bottom */
+}
+
+/* 🚂 Sliding Right Window */
+.analytics-viewport {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.analytics-track {
+    display: flex;
+    width: 200%;
+    /* Two screens: 0 (waiting), 1 (active data grid) */
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-view {
+    width: 50%;
+    height: 100%;
+    padding: 24px;
+}
+
+/* 📭 View 0: System Idle */
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.status-box h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.status-box p {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+    max-width: 320px;
+}
+
+/* 📊 View 1: Dense Data Grid Space Optimization */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 160px 1fr;
+    /* Compact top metrics, massive text boxes below */
+    gap: 16px;
+    height: 100%;
+    width: 100%;
+}
+
+.metric-box,
+.data-panel {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-glow);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Small system tags inside components to make it look technical */
+.box-tag {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    font-family: monospace;
+}
+
+.metric-box h3 {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-num {
+    font-size: 4rem;
+    font-weight: 900;
+    margin-top: auto;
+    line-height: 1;
+}
+
+.score-num .unit {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--text-sub);
+}
+
+.safety-card {
+    color: var(--neon-green);
+}
+
+.performance-card {
+    color: var(--neon-cyan);
+}
+
+.medical-box h4 {
+    font-size: 0.95rem;
+    color: var(--neon-cyan);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.medical-box p {
+    color: #CBD5E1;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    overflow-y: auto;
+    /* If text is long, it scrolls nicely inside its component */
+}
+
+.action-box ul {
+    list-style: none;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-box li {
+    background: var(--bg-sub);
+    border-left: 3px solid var(--neon-green);
+    padding: 12px 14px;
+    font-size: 0.88rem;
+    border-radius: 4px;
+    color: #E2E8F0;
+}

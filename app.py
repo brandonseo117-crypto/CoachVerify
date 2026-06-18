@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai          # Updated to the new SDK
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 API_key = os.getenv("gemini_key")
-genai.configure(api_key=API_key)
+client = genai.Client(api_key=API_key)
 
 SPORTS_SCIENCE_DB = {
     "dry_scooping": {
@@ -43,10 +43,14 @@ SPORTS_SCIENCE_DB = {
 @app.route('/api/audit', methods=['POST'])
 def audit_reliability():
     try:
-        user_data = request.get_json()
+
+        user_data = request.json
+        if not user_data:
+            return jsonify({"error": "Invalid JSON payload provided."}), 400
+
         claim = user_data.get('claim', '').lower()
         routine = user_data.get('routine', '').lower()
-        profile = user_data.get('profile', {})
+        profile = user_data.get('profile', '')
 
         if not claim or not routine:
             return jsonify({"error": "Claim and routine are required fields."}), 400
@@ -68,7 +72,7 @@ def audit_reliability():
         4. **Actionable Alternative Checklist**: Provide 2-3 safe, scientifically verified alternative steps the athlete can take instead to achieve their fitness goals safely.
 
         OUTPUT FORMAT REQUIREMENTS:
-        You must return your analysis as a raw, valid JSON object. Do not wrap it in markdown code blocks (no ```json). Use this exact key structure:
+        You must return your analysis as a raw, valid JSON object. Do not wrap it in markdown code blocks. Use this exact key structure:
         {{
             "safety_score": <integer from 0 to 100>,
             "performance_score": <integer from 0 to 100>,
@@ -78,13 +82,14 @@ def audit_reliability():
         }}
         """
 
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash",
-                                      generation_config={"response_mime_type": "application/json"})
-
-        ai_response = model.generate_content(prompt)
+        # Updated syntax for the new google-genai library
+        ai_response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config={'response_mime_type': 'application/json'}
+        )
 
         processed_result = json.loads(ai_response.text)
-
         return jsonify(processed_result), 200
 
     except Exception as e:
