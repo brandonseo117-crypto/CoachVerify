@@ -74,15 +74,32 @@ document.getElementById('auditForm').addEventListener('submit', async (e) => {
             }
         }
 
-        // --- Blueprint Checklist Generation ---
+        // --- Upgraded Blueprint Checklist Generation with Research Rationales ---
         const listContainer = document.getElementById('alternativesList');
         listContainer.innerHTML = "";
-        data.alternative_steps.forEach(step => {
-            const li = document.createElement('li');
-            li.innerText = step;
-            listContainer.appendChild(li);
-        });
 
+        if (data.alternative_steps && data.alternative_steps.length > 0) {
+            data.alternative_steps.forEach(step => {
+                const li = document.createElement('li');
+                li.style.display = 'flex';
+                li.style.flexDirection = 'column';
+                li.style.gap = '4px';
+
+                li.innerHTML = `
+                    <strong style="color: var(--text-main); font-size: 0.95rem;">
+                        ${step.actionable_tip}
+                    </strong>
+                    <span style="color: var(--text-sub); font-size: 0.85rem; line-height: 1.4;">
+                        🔬 Rationale: ${step.scientific_rationale}
+                    </span>
+                `;
+                listContainer.appendChild(li);
+            });
+        } else {
+            listContainer.innerHTML = '<li style="color: var(--text-sub);">No alternative metrics compiled for this matrix segment.</li>';
+        }
+
+        // --- Literature Breakdown Section ---
         const sourcesContainer = document.getElementById('sourcesContainer');
         if (sourcesContainer) {
             sourcesContainer.innerHTML = ""; // Wipe the template placeholder

@@ -87,13 +87,20 @@ class IndividualPaper(BaseModel):
     paper_reliability: int
 
 
+class OptimizationStep(BaseModel):
+    actionable_tip: str = Field(
+        description="The concrete step or alternative compound/routine for the athlete.")
+    scientific_rationale: str = Field(
+        description="The explicit clinical or physiological reason why this alternative is safe and effective.")
+
+
 class AuditResultSchema(BaseModel):
     safety_score: int
     performance_score: int
     reliability_score: int
     matched_paper: str
     translated_consensus: str
-    alternative_steps: List[str]
+    alternative_steps: List[OptimizationStep]
     individual_papers: List[IndividualPaper]
 
 
@@ -129,7 +136,7 @@ def audit_reliability():
            - **Demographics Alignment (Max 40 pts)**: Check `population_demographics`. Does it match human adolescent athletes? If a study uses middle-aged adults or animal models, cap this subsection score below 15 points.
            - **Recency (Max 20 pts)**: Check `year`. Studies published within the last decade get full marks.
         4. **The Translation Layer**: Translate the complex medical findings of the study into clear, direct, and understandable English. Avoid intense academic jargon (e.g., instead of 'acute transient arterial hypertension', write 'a sudden, dangerous spike in blood pressure'). Keep it objective and authoritative.
-        5. **Actionable Alternative Checklist**: Provide 2-3 safe, scientifically verified alternative steps the athlete can take instead to achieve their fitness goals safely.
+        5. **Actionable Alternative Checklist**: Provide 2-3 safe, scientifically verified alternative steps the athlete can take instead to achieve their fitness goals safely. Each step must include a concrete 'actionable_tip' and a clear 'scientific_rationale' rooted directly in established sports medicine or your grounding database.
         """
 
         # 🚀 UPGRADED: Explicitly pass Pydantic rules inside the generate engine configuration
