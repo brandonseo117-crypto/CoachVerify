@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoachVerify // Sports Science Audit Matrix</title>
+    <title>CoachVerify - Varsity Performance Portal</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
@@ -15,121 +15,44 @@
         <section id="state-home" class="view-state active-state">
             <div class="hero-content">
                 <div class="glitch-logo">COACH<span>VERIFY</span></div>
-                <h1 class="hero-title">Adolescent Sports Science <br>& Supplement Auditing Matrix</h1>
-                <p class="hero-subtitle">Instant plain-English translation of clinical research, customized for
-                    developing athletes.</p>
-                <button class="cta-btn" onclick="navigateTo('state-query')">Initialize Safety Audit</button>
+                <h1 class="hero-title">Varsity Performance Portal</h1>
+                <p class="hero-subtitle">Real-time sports science audit and clinical research verification for
+                    competitive varsity athletes. Run immediate safety evaluations on active protocols.</p>
+                <button class="send-btn" onclick="navigateTo('state-chat')">Open Performance Console</button>
             </div>
         </section>
 
-        <section id="state-query" class="view-state">
-            <div class="form-card">
-                <div class="form-header">
-                    <h2>Audit Parameter Configuration</h2>
-                    <p>Input target routine and tracking metrics below.</p>
+        <section id="state-chat" class="view-state">
+            <div class="chat-container">
+
+                <div id="chatThread" class="chat-thread">
+
+                    <div class="message-bubble coach">
+                        <p><strong>[SYSTEM INJECT]: Varsity Athlete Matrix Active.</strong></p>
+                        <p>Welcome to the validation console. Drop your current supplementation tier, training claim, or
+                            daily recovery routine below to cross-examine it against clinical research data.</p>
+                    </div>
+
                 </div>
 
-                <form id="auditForm">
-                    <div class="input-group">
-                        <label for="profile">Athlete Roster Profile</label>
-                        <select id="profile" required>
-                            <option value="Youth Sports (U14)">Youth Sports (U14)</option>
-                            <option value="Junior Varsity">Junior Varsity</option>
-                            <option value="Varsity Athlete" selected>Varsity Athlete</option>
-                        </select>
-                    </div>
+                <div id="inlineChatLoader"
+                    style="display: none; padding: 12px 24px; background: rgba(7, 9, 19, 0.9); align-items: center; gap: 12px; border-top: 1px solid var(--border-subtle);">
+                    <div class="cyber-spinner" style="width: 20px; height: 20px; margin: 0; border-width: 2px;"></div>
+                    <span class="loading-sub">Cross-checking peer-reviewed logs...</span>
+                </div>
 
-                    <div class="input-group">
-                        <label for="claim">Target Trend / Supplement / Compound</label>
-                        <input type="text" id="claim" placeholder="e.g., Dry-scooping pre-workout" required>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="routine">Proposed Dosage / Routine Context</label>
-                        <textarea id="routine" rows="4"
-                            placeholder="e.g., Taking 1 full scoop dry right before high-intensity training"
-                            required></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="secondary-btn" onclick="navigateTo('state-home')">Return
-                            Home</button>
-                        <button type="submit" id="submitBtn" class="primary-btn">Execute Audit Matrix</button>
-                    </div>
+                <form id="chatConsoleForm" class="chat-input-bar">
+                    <input type="text" id="athleteMessageInput"
+                        placeholder="Ask Coach: 'Is dry-scooping safe?' or 'Rate 5g creatine monohydrate post-workout'..."
+                        autocomplete="off" required>
+                    <button type="submit" class="send-btn">Send</button>
                 </form>
-            </div>
-        </section>
-
-        <section id="state-loader" class="view-state">
-            <div class="loader-content">
-                <div class="cyber-spinner"></div>
-                <h2 class="loading-title">Querying Ground-Truth Databases</h2>
-                <div class="loading-bar">
-                    <div class="loading-progress"></div>
-                </div>
-                <p class="loading-sub">Parsing context gates, running semantic matching, and bypassing academic
-                    jargon...</p>
-            </div>
-        </section>
-
-        <section id="state-results" class="view-state">
-            <div class="results-layout">
-
-                <header class="results-header">
-                    <div class="results-meta">
-                        <span class="status-tag">Audit Verified</span>
-                        <h2 id="matchedPaper">Loading Source Documentation...</h2>
-                    </div>
-                    <button class="secondary-btn" onclick="resetAuditFlow()">New Analysis Matrix</button>
-                </header>
-
-                <div class="metrics-grid">
-                    <div class="metric-card" id="safetyCard">
-                        <span class="card-label">Biometric Safety Index</span>
-                        <div class="score-display"><span id="safetyScore">--</span><span class="unit">%</span></div>
-                    </div>
-
-                    <div class="metric-card reliability-card" id="reliabilityCard">
-                        <span class="card-label">Scientific Reliability Index</span>
-                        <div class="score-display"><span id="reliabilityScore">--</span><span class="unit">%</span>
-                        </div>
-                        <span id="reliabilityBadge" class="reliability-badge">Verifying...</span>
-                    </div>
-
-                    <div class="metric-card" id="performanceCard">
-                        <span class="card-label">Performance Efficacy</span>
-                        <div class="score-display"><span id="perfScore">--</span><span class="unit">%</span></div>
-                    </div>
-                </div>
-
-                <div class="details-layout">
-                    <div class="data-panel">
-                        <h3>Clinical Consensus Translation</h3>
-                        <div class="scroll-wrapper">
-                            <p id="translationText">Analyzing data streams...</p>
-                        </div>
-                    </div>
-
-                    <div class="data-panel">
-                        <h3>Coach-Approved Optimization Blueprint</h3>
-                        <div class="scroll-wrapper">
-                            <ul id="alternativesList">
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="data-panel source-feed-panel">
-                    <h3>Ground-Truth Literature Breakdown</h3>
-                    <div id="sourcesContainer" class="sources-list-wrapper">
-                        <p class="empty-feed-text">Awaiting clinical verification matrix sequence...</p>
-                    </div>
-                </div>
 
             </div>
         </section>
 
     </main>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 

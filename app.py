@@ -3,7 +3,7 @@ import json
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from google import genai
-from google.genai import types  # 👈 Added to utilize the native SDK types layer
+from google.genai import types
 from pydantic import BaseModel, Field
 from typing import List
 from dotenv import load_dotenv
@@ -77,31 +77,18 @@ SPORTS_SCIENCE_DB = {
     }
 }
 
-# 🔐 NEW: Pydantic Schema mapping guarantees keys and type matching perfectly
-
-
-class IndividualPaper(BaseModel):
-    title: str
-    journal: str
-    pubmed_link: str
-    paper_reliability: int
-
-
-class OptimizationStep(BaseModel):
-    actionable_tip: str = Field(
-        description="The concrete step or alternative compound/routine for the athlete.")
-    scientific_rationale: str = Field(
-        description="The explicit clinical or physiological reason why this alternative is safe and effective.")
+# 🔐 Pydantic Schema customized perfectly for script.js telemetry fields
 
 
 class AuditResultSchema(BaseModel):
-    safety_score: int
-    performance_score: int
-    reliability_score: int
-    matched_paper: str
-    translated_consensus: str
-    alternative_steps: List[OptimizationStep]
-    individual_papers: List[IndividualPaper]
+    safety_score: int = Field(
+        description="0-100 score evaluating protocol safety. If a generic greeting or non-supplement question, return 100.")
+    performance_score: int = Field(
+        description="0-100 score evaluating performance enhancement impact. Default to 0 if irrelevant.")
+    matched_paper: str = Field(
+        description="The citation title/journal source matched from the DB or external medical consensus.")
+    translated_consensus: str = Field(
+        description="The primary conversational response from CoachVerify. Keep it punchy, athletic, direct, and elite.")
 
 
 @app.route('/api/audit', methods=['POST'])
@@ -111,39 +98,33 @@ def audit_reliability():
         if not user_data:
             return jsonify({"error": "Invalid JSON payload provided."}), 400
 
-        claim = user_data.get('claim', '').lower()
-        routine = user_data.get('routine', '').lower()
-        profile = user_data.get('profile', '')
+        # script.js maps user input to 'claim' field directly
+        claim = user_data.get('claim', '').strip()
+        profile = "Varsity Athlete"
 
-        if not claim or not routine:
-            return jsonify({"error": "Claim and routine are required fields."}), 400
+        if not claim:
+            return jsonify({"error": "Message content is required."}), 400
 
-        prompt = f"""You are CoachVerify, an automated expert sports medicine system calibrated for adolescent and pediatric exercise physiology. Your function is to act as an objective, clinical translation layer.
+        # Adjusted system prompt to deliver answers like a premium chatbot coach
+        prompt = f"""You are CoachVerify, an elite AI sports medicine coach counseling a {profile}. 
+        Respond to the user's message in a direct, motivational, authoritative coaching style. Speak directly to them.
 
-        ATHLETE PROFILE UNDER AUDIT:
-        - Competitive/Age Level: {profile}
-        - Proposed Trend/Product: {claim}
-        - User's Proposed Routine: {routine}
+        USER MESSAGE / INQUIRY:
+        "{claim}"
 
         VERIFIED SPORTS SCIENCE GROUNDING DATABASE:
         {json.dumps(SPORTS_SCIENCE_DB, indent=2)}
 
-        EXECUTION INSTRUCTIONS:
-        1. **NLP Semantic Evaluation**: Analyze the user's input. Match it semantically against the concepts in our database. If it matches a concept (e.g., matching 'dry scoop' or 'powder before gym' to 'dry_scooping'), extract those values. If it does not match anything in our database, evaluate it using general adolescent sports science rules and flag it as 'External Medical Fact-Check'.
-        2. **Context Gating**: Adjust the safety parameters based on the Athlete Profile. If the profile is 'Youth Sports' or 'Junior Varsity', lower safety thresholds aggressively if any stimulant or extreme method is mentioned.
-        3. **Rigorous Scientific Reliability Index**: Calculate an overall system `reliability_score` (0 to 100) and evaluate individual papers using the `methodology` data:
-           - **Study Design (Max 40 pts)**: Meta-analyses, Systematic Reviews, and Randomized Controlled Trials (RCTs) score maximum points. Award fewer points for case reports or observational studies.
-           - **Demographics Alignment (Max 40 pts)**: Check `population_demographics`. Does it match human adolescent athletes? If a study uses middle-aged adults or animal models, cap this subsection score below 15 points.
-           - **Recency (Max 20 pts)**: Check `year`. Studies published within the last decade get full marks.
-        4. **The Translation Layer**: Translate the complex medical findings of the study into clear, direct, and understandable English. Avoid intense academic jargon (e.g., instead of 'acute transient arterial hypertension', write 'a sudden, dangerous spike in blood pressure'). Keep it objective and authoritative.
-        5. **Actionable Alternative Checklist**: Provide 2-3 safe, scientifically verified alternative steps the athlete can take instead to achieve their fitness goals safely. Each step must include a concrete 'actionable_tip' and a clear 'scientific_rationale' rooted directly in established sports medicine or your grounding database.
+        EXECUTION PIPELINE:
+        1. **Semantic Grounding Mapping**: Evaluate the user's input against the database. If they are talking about dry scooping, creatine, or weight cuts, align your telemetry scores directly with our database.
+        2. **External Fact-Checking**: If their message contains a training method or supplement not in our local database, use general adolescent sports science rules to determine a realistic safety/performance layout. If it's a generic greeting, keep safety at 100 and performance at 0.
+        3. **The Voice of CoachVerify**: Place your full direct response into the `translated_consensus` variable. Do not wrap it in clinical textbook jargon—break it down into explicit, actionable athletic instructions.
         """
 
-        # 🚀 UPGRADED: Explicitly pass Pydantic rules inside the generate engine configuration
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=AuditResultSchema,
-            temperature=0.2  # Lowered temperature to minimize structural hallucinations
+            temperature=0.3
         )
 
         ai_response = client.models.generate_content(
@@ -152,8 +133,9 @@ def audit_reliability():
             config=config
         )
 
-        # 🛡️ BULLETPROOF: Safely clean out any edge-case string markdown closures before rendering
         raw_text = ai_response.text.strip()
+
+        # Strip code fences if the model wraps them mistakenly
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()
             if lines[0].startswith("```json") or lines[0].startswith("```"):
