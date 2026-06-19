@@ -2,7 +2,10 @@ import os
 import json
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from google import genai          # Updated to the new SDK
+from google import genai
+from google.genai import types  # 👈 Added to utilize the native SDK types layer
+from pydantic import BaseModel, Field
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,7 +21,7 @@ def index():
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
 
-# 📊 UPGRADED: Grounding database now contains precise research parameters
+# 📊 Grounding database containing research parameters
 SPORTS_SCIENCE_DB = {
     "dry_scooping": {
         "title": "Cardiovascular Strain of Concentrated Caffeine Ingestion in Adolescents",
@@ -74,6 +77,25 @@ SPORTS_SCIENCE_DB = {
     }
 }
 
+# 🔐 NEW: Pydantic Schema mapping guarantees keys and type matching perfectly
+
+
+class IndividualPaper(BaseModel):
+    title: str
+    journal: str
+    pubmed_link: str
+    paper_reliability: int
+
+
+class AuditResultSchema(BaseModel):
+    safety_score: int
+    performance_score: int
+    reliability_score: int
+    matched_paper: str
+    translated_consensus: str
+    alternative_steps: List[str]
+    individual_papers: List[IndividualPaper]
+
 
 @app.route('/api/audit', methods=['POST'])
 def audit_reliability():
@@ -108,44 +130,37 @@ def audit_reliability():
            - **Recency (Max 20 pts)**: Check `year`. Studies published within the last decade get full marks.
         4. **The Translation Layer**: Translate the complex medical findings of the study into clear, direct, and understandable English. Avoid intense academic jargon (e.g., instead of 'acute transient arterial hypertension', write 'a sudden, dangerous spike in blood pressure'). Keep it objective and authoritative.
         5. **Actionable Alternative Checklist**: Provide 2-3 safe, scientifically verified alternative steps the athlete can take instead to achieve their fitness goals safely.
-
-        OUTPUT FORMAT REQUIREMENTS:
-        You must return your analysis as a raw, valid JSON object matching this exact key structure:
-        {{
-            "safety_score": <integer from 0 to 100>,
-            "performance_score": <integer from 0 to 100>,
-            "reliability_score": <integer from 0 to 100>,
-            "matched_paper": "<Master Consensus Title Summary>",
-            "translated_consensus": "<Your plain-English translation text>",
-            "alternative_steps": ["<Step 1>", "<Step 2>", "<Step 3>"],
-            
-            "individual_papers": [
-                {{
-                    "title": "<Title of matched paper 1>",
-                    "journal": "<Journal Name (Year)>",
-                    "pubmed_link": "https://pubmed.ncbi.nlm.nih.gov/?term=<Search+Keywords+For+This+Paper>",
-                    "paper_reliability": <integer score from 0 to 100 based on study type and sample size>
-                }},
-                {{
-                    "title": "<Title of related supporting paper 2>",
-                    "journal": "<Journal Name (Year)>",
-                    "pubmed_link": "https://pubmed.ncbi.nlm.nih.gov/?term=<Search+Keywords+For+This+Paper>",
-                    "paper_reliability": <integer score from 0 to 100>
-                }}
-            ]
-        }}
         """
 
-        # Updated syntax for the new google-genai library
+        # 🚀 UPGRADED: Explicitly pass Pydantic rules inside the generate engine configuration
+        config = types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=AuditResultSchema,
+            temperature=0.2  # Lowered temperature to minimize structural hallucinations
+        )
+
         ai_response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
-            config={'response_mime_type': 'application/json'}
+            config=config
         )
 
-        processed_result = json.loads(ai_response.text)
+        # 🛡️ BULLETPROOF: Safely clean out any edge-case string markdown closures before rendering
+        raw_text = ai_response.text.strip()
+        if raw_text.startswith("```"):
+            lines = raw_text.splitlines()
+            if lines[0].startswith("```json") or lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw_text = "\n".join(lines).strip()
+
+        processed_result = json.loads(raw_text)
         return jsonify(processed_result), 200
 
+    except json.JSONDecodeError as je:
+        print(f"JSON Structure Extraction Failure: {str(je)}")
+        return jsonify({"error": "Data generation error", "details": "The engine returned an improperly enclosed payload."}), 500
     except Exception as e:
         print(f"Backend processing error: {str(e)}")
         return jsonify({"error": "Internal engine parsing failure", "details": str(e)}), 500

@@ -20,19 +20,23 @@
 body {
     background: var(--bg-dark);
     color: var(--text-main);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    height: 100vh;
+    min-height: 100vh;
     width: 100vw;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    padding: 40px 24px;
 }
 
 .app-container {
     position: relative;
     width: 100%;
-    height: 100%;
+    max-width: 1340px;
+    height: auto;
+    margin: 0 auto;
 }
 
 /* State Architecture */
@@ -41,26 +45,28 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: auto;
     display: none;
     opacity: 0;
-    padding: 40px;
+    padding: 40px 0;
     transition: opacity 0.4s ease-in-out;
 }
 
 .view-state.active-state {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: stretch;
     opacity: 1;
     z-index: 10;
+    position: relative;
 }
 
 /* ==================== STATE 0 & 1: HOME & FORM ==================== */
 .hero-content {
     text-align: center;
     max-width: 750px;
+    margin: 40px auto 0;
 }
 
 .glitch-logo {
@@ -99,6 +105,7 @@ body {
     padding: 40px;
     width: 100%;
     max-width: 580px;
+    margin: 0 auto;
 }
 
 .form-header {
@@ -195,6 +202,7 @@ body {
 /* ==================== STATE 2: LOADER ==================== */
 .loader-content {
     text-align: center;
+    margin: 80px auto 0;
 }
 
 .cyber-spinner {
@@ -239,17 +247,21 @@ body {
 
 /* ==================== STATE 3: RESULTS DESIGN ==================== */
 #state-results.active-state {
-    display: grid;
-    /* Adjusted layout space allocations to include bottom sources view safely */
-    grid-template-rows: auto auto 1fr auto;
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     align-items: stretch;
-    overflow-y: auto;
-    /* Makes dashboard perfectly scrollable if screen size is compressed */
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 1340px;
+    margin: 0 auto;
 }
 
 .results-layout {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
 }
 
 .results-header {
@@ -258,6 +270,7 @@ body {
     align-items: center;
     border-bottom: 1px solid var(--border-glow);
     padding-bottom: 16px;
+    width: 100%;
 }
 
 .status-tag {
@@ -278,19 +291,22 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* ✅ FIXED: Layout grids calibrated separately */
 .metrics-grid {
     display: grid;
     grid-template-columns: 1fr 1.1fr 1fr;
-    /* Splitting row precisely into 3 distinct items */
     gap: 16px;
+    width: 100%;
 }
 
 .details-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    min-height: 0;
+    gap: 20px;
+    width: 100%;
+}
+
+.source-feed-panel {
+    width: 100%;
 }
 
 .metric-card,
@@ -303,8 +319,23 @@ body {
     flex-direction: column;
 }
 
+.metric-card {
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(108, 125, 147, 0.5);
+}
+
 .data-panel {
-    min-height: 0;
+    min-height: 380px;
+    padding: 32px;
+    align-items: stretch;
+    min-width: 0;
 }
 
 .card-label {
@@ -319,7 +350,10 @@ body {
     font-size: 4rem;
     font-weight: 900;
     line-height: 1;
-    margin-top: auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    margin: 10px 0 0;
 }
 
 #safetyCard {
@@ -330,19 +364,20 @@ body {
     color: var(--neon-cyan);
 }
 
-/* ✅ NEW: Central Reliability Identity Accents */
 .reliability-card {
     border-color: var(--border-glow);
-    align-items: center;
-    text-align: center;
 }
 
 .reliability-badge {
-    margin-top: 8px;
+    margin-top: 12px;
     font: 700 0.7rem var(--font-mono);
     text-transform: uppercase;
-    padding: 4px 12px;
+    letter-spacing: 0.5px;
+    padding: 5px 14px;
     border-radius: 20px;
+    background: rgba(0, 255, 135, 0.12);
+    color: var(--neon-green);
+    border: 1px solid rgba(0, 255, 135, 0.3);
 }
 
 .score-display .unit {
@@ -368,8 +403,8 @@ body {
 
 .scroll-wrapper p {
     color: #CBD5E1;
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 1.05rem;
+    line-height: 1.7;
 }
 
 #alternativesList {
@@ -382,11 +417,11 @@ body {
 #alternativesList li {
     background: var(--bg-sub);
     border-left: 3px solid var(--neon-green);
-    padding: 12px 16px;
-    font-size: 0.9rem;
+    padding: 14px 18px;
+    font-size: 1rem;
     border-radius: 4px;
     color: #E2E8F0;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* Animations */
