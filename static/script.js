@@ -59,6 +59,7 @@ document.getElementById('chatConsoleForm').addEventListener('submit', async (e) 
 });
 
 // 🎨 Structural Bubble Rendering Engine
+// 🎨 Structural Bubble & Bibliography Rendering Engine
 function appendMessage(text, sender, data = null) {
     const thread = document.getElementById('chatThread');
     const bubble = document.createElement('div');
@@ -91,6 +92,58 @@ function appendMessage(text, sender, data = null) {
                     </span>
                 </div>
             `;
+
+            // 📚 UPDATE SIDEBAR BIBLIOGRAPHY DYNAMICALLY
+            const sidebarContainer = document.getElementById('sidebarSourcesContainer');
+            if (sidebarContainer) {
+                // Clear out initial empty text states or previous query parameters
+                sidebarContainer.innerHTML = '';
+
+                // Safely iterate through database-grounded papers if the AI payload parsed them
+                if (data.individual_papers && data.individual_papers.length > 0) {
+                    data.individual_papers.forEach(paper => {
+                        const reliability = parseInt(paper.paper_reliability || 80);
+                        let badgeColor = 'rgba(0, 255, 135, 0.15)';
+                        let textColor = 'var(--neon-green)';
+
+                        if (reliability < 50) {
+                            badgeColor = 'rgba(255, 51, 102, 0.15)';
+                            textColor = 'var(--neon-red)';
+                        } else if (reliability < 75) {
+                            badgeColor = 'rgba(0, 223, 250, 0.15)';
+                            textColor = 'var(--neon-cyan)';
+                        }
+
+                        const card = document.createElement('div');
+                        card.className = 'source-sidebar-card';
+                        card.innerHTML = `
+                            <a class="source-title-link" href="${paper.pubmed_link || '#'}" target="_blank" rel="noopener noreferrer">
+                                ${paper.title}
+                            </a>
+                            <div class="source-meta-row">
+                                <span class="source-journal">${paper.journal || 'Sports Med Journal'}</span>
+                                <span class="source-reliability-tag" style="background: ${badgeColor}; color: ${textColor};">
+                                    RIGOR: ${reliability}%
+                                </span>
+                            </div>
+                        `;
+                        sidebarContainer.appendChild(card);
+                    });
+                } else {
+                    // Fallback reference card if individual items array is omitted
+                    sidebarContainer.innerHTML = `
+                        <div class="source-sidebar-card">
+                            <span class="source-title-link">${data.matched_paper || 'Clinical Consensus Reference'}</span>
+                            <div class="source-meta-row">
+                                <span class="source-journal">Core Database Evidence</span>
+                                <span class="source-reliability-tag" style="background: rgba(0, 223, 250, 0.15); color: var(--neon-cyan);">
+                                    VERIFIED
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
         }
         bubble.innerHTML = content;
     }

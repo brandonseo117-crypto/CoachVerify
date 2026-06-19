@@ -9,6 +9,12 @@
 </head>
 
 <body>
+    <nav class="top-navbar">
+        <div class="nav-brand">COACH<span>VERIFY</span> // SYSTEM_v2.5</div>
+        <div class="nav-status">
+            <span class="status-dot"></span> SECURE MATRIX LINK
+        </div>
+    </nav>
 
     <main class="app-container">
 
@@ -23,30 +29,41 @@
         </section>
 
         <section id="state-chat" class="view-state">
-            <div class="chat-container">
+            <div class="chat-layout-wrapper">
 
-                <div id="chatThread" class="chat-thread">
-
-                    <div class="message-bubble coach">
-                        <p><strong>[SYSTEM INJECT]: Varsity Athlete Matrix Active.</strong></p>
-                        <p>Welcome to the validation console. Drop your current supplementation tier, training claim, or
-                            daily recovery routine below to cross-examine it against clinical research data.</p>
+                <div class="chat-container">
+                    <div id="chatThread" class="chat-thread">
+                        <div class="message-bubble coach">
+                            <p><strong>[SYSTEM INJECT]: Varsity Athlete Matrix Active.</strong></p>
+                            <p>Welcome to the validation console. Drop your current supplementation tier, training
+                                claim, or daily recovery routine below to cross-examine it against clinical research
+                                data.</p>
+                        </div>
                     </div>
 
+                    <div id="inlineChatLoader"
+                        style="display: none; padding: 12px 24px; background: rgba(7, 9, 19, 0.9); align-items: center; gap: 12px; border-top: 1px solid var(--border-subtle);">
+                        <div class="cyber-spinner" style="width: 20px; height: 20px; margin: 0; border-width: 2px;">
+                        </div>
+                        <span class="loading-sub">Cross-checking peer-reviewed logs...</span>
+                    </div>
+
+                    <form id="chatConsoleForm" class="chat-input-bar">
+                        <input type="text" id="athleteMessageInput" placeholder="Ask Coach: 'Is dry-scooping safe?'..."
+                            autocomplete="off" required>
+                        <button type="submit" class="send-btn">Send</button>
+                    </form>
                 </div>
 
-                <div id="inlineChatLoader"
-                    style="display: none; padding: 12px 24px; background: rgba(7, 9, 19, 0.9); align-items: center; gap: 12px; border-top: 1px solid var(--border-subtle);">
-                    <div class="cyber-spinner" style="width: 20px; height: 20px; margin: 0; border-width: 2px;"></div>
-                    <span class="loading-sub">Cross-checking peer-reviewed logs...</span>
-                </div>
-
-                <form id="chatConsoleForm" class="chat-input-bar">
-                    <input type="text" id="athleteMessageInput"
-                        placeholder="Ask Coach: 'Is dry-scooping safe?' or 'Rate 5g creatine monohydrate post-workout'..."
-                        autocomplete="off" required>
-                    <button type="submit" class="send-btn">Send</button>
-                </form>
+                <aside id="bibliographySidebar" class="bibliography-sidebar">
+                    <div class="sidebar-header">
+                        <h3>SUPPORTING LITERATURE</h3>
+                        <p class="loading-sub">TELEMETRY SOURCES</p>
+                    </div>
+                    <div id="sidebarSourcesContainer" class="sidebar-sources-list">
+                        <p class="empty-sidebar-text">Awaiting transmission payload validation...</p>
+                    </div>
+                </aside>
 
             </div>
         </section>
