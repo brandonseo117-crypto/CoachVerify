@@ -522,3 +522,88 @@ body {
     margin-top: 40px;
     line-height: 1.6;
 }
+
+/* ==================== PREMIUM SCIENTIFIC DATA UI MODULES ==================== */
+
+/* Master response card wrapper */
+.scientific-response-block {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+/* 🎯 Main Summary Block (Similar to Consensus Copilot headers) */
+.consensus-summary-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid var(--neon-cyan);
+    padding: 16px;
+    border-radius: 4px 12px 12px 4px;
+    margin-bottom: 4px;
+}
+
+.consensus-summary-card .summary-header {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    display: block;
+    font-weight: 700;
+}
+
+.consensus-summary-card p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+/* 📊 Data Grid for Metrics & Demographics */
+.clinical-data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.data-metric-tile {
+    background: rgba(7, 9, 19, 0.6);
+    border: 1px solid var(--border-subtle);
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.data-metric-tile .tile-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
+.data-metric-tile .tile-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* 🔬 Study Highlight Chips */
+.study-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.study-pill {
+    font-size: 0.7rem;
+    font-family: monospace;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    border-radius: 100px;
+    color: var(--text-sub);
+}
