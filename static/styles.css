@@ -1,5 +1,5 @@
 :root {
-    /* ⚡ Elite Athletic Dark Cyber Theme Variables */
+
     --bg-dark: #070913;
     --bg-main: #0B0E1A;
     --bg-panel: rgba(16, 22, 42, 0.65);
@@ -12,7 +12,7 @@
     --text-sub: #94A3B8;
     --text-muted: #64748B;
 
-    /* Dynamic Feedback Colors */
+
     --neon-cyan: #00DFFA;
     --neon-green: #00FF87;
     --neon-purple: #9D4EDD;
@@ -29,7 +29,7 @@ body {
     background: var(--bg-main);
     color: var(--text-main);
     overflow: hidden;
-    /* 💡 Locks the parent window frame to maximize application viewport performance */
+
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     height: 100vh;
     width: 100vw;
@@ -37,7 +37,7 @@ body {
     justify-content: center;
     align-items: flex-start;
     padding: 92px 32px 32px;
-    /* Top padding clears fixed top navbar */
+
     line-height: 1.5;
 }
 
@@ -45,13 +45,13 @@ body {
     position: relative;
     width: 100%;
     max-width: 1600px;
-    /* Constrained slightly for the chat layout focus */
+
     margin: 0 auto;
     flex-direction: column;
     justify-content: flex-start;
 }
 
-/* State Architecture Layout */
+
 .view-state {
     position: absolute;
     top: 0;
@@ -71,7 +71,7 @@ body {
     position: relative;
 }
 
-/* ==================== CHAT INTERACTIVE VIEW ==================== */
+/* CHAT INTERACTIVE VIEW */
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -86,7 +86,6 @@ body {
     position: relative;
 }
 
-/* Technical Corner Design Accents */
 .chat-container::before,
 .chat-container::after {
     content: '';
@@ -120,7 +119,7 @@ body {
     scroll-behavior: smooth;
 }
 
-/* Custom Scrollbar */
+/* Scrollbar */
 .chat-thread::-webkit-scrollbar {
     width: 6px;
 }
@@ -134,7 +133,7 @@ body {
     border-radius: 3px;
 }
 
-/* Chat Message Layouts */
+/* Message bubbles */
 .message-bubble {
     max-width: 75%;
     padding: 14px 18px;
@@ -191,7 +190,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Chat Input Console Wrapper */
 .chat-input-bar {
     display: flex;
     gap: 12px;
@@ -219,7 +217,7 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* Action Trigger System */
+/* Triggers */
 .send-btn {
     background: var(--neon-cyan);
     color: var(--bg-dark);
@@ -243,7 +241,7 @@ body {
     transform: scale(0.98);
 }
 
-/* ==================== STATE 2: STREAMING LOADER ==================== */
+/* STREAMING LOADER  */
 .loader-content {
     text-align: center;
     margin: 120px auto 0;
@@ -282,7 +280,7 @@ body {
     }
 }
 
-/* ==================== HOME SCREEN POLISH ==================== */
+/* HOME SCREEN */
 .hero-content {
     text-align: center;
     max-width: 720px;
@@ -368,7 +366,7 @@ body {
     box-shadow: 0 0 8px var(--neon-green);
 }
 
-/* ==================== UPDATED BODY RULE ==================== */
+/* UPDATED BODY RULE */
 body {
     background: var(--bg-main);
     color: var(--text-main);
@@ -388,17 +386,16 @@ body {
     background-size: 30px 30px;
 }
 
-/* ==================== TWO-COLUMN CHAT & SIDEBAR GRID ==================== */
+/* TWO-COLUMN LAYOUT */
 .chat-layout-wrapper {
     display: flex;
     gap: 24px;
     width: 100%;
     height: calc(100vh - 140px);
     min-height: 500px;
-    /* Aligns the height of both panels perfectly */
 }
 
-/* Ensure the chat box scales to fill 70% of the container space */
+/* 70% of container filled with the chat box */
 .chat-layout-wrapper .chat-container {
     flex: 1;
     height: 100%;
@@ -446,7 +443,7 @@ body {
     gap: 14px;
 }
 
-/* Custom Scrollbar for Sidebar */
+/* Custom scrollbar for sidebar */
 .sidebar-sources-list::-webkit-scrollbar {
     width: 4px;
 }
@@ -456,7 +453,7 @@ body {
     border-radius: 2px;
 }
 
-/* Bibliography Item Cards */
+/* Bib item cards */
 .source-sidebar-card {
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-subtle);
@@ -523,9 +520,8 @@ body {
     line-height: 1.6;
 }
 
-/* ==================== PREMIUM SCIENTIFIC DATA UI MODULES ==================== */
+/* polished science modules */
 
-/* Master response card wrapper */
 .scientific-response-block {
     display: flex;
     flex-direction: column;
@@ -533,7 +529,6 @@ body {
     width: 100%;
 }
 
-/* 🎯 Main Summary Block (Similar to Consensus Copilot headers) */
 .consensus-summary-card {
     background: rgba(255, 255, 255, 0.02);
     border-left: 3px solid var(--neon-cyan);
@@ -559,7 +554,6 @@ body {
     color: var(--text-main);
 }
 
-/* 📊 Data Grid for Metrics & Demographics */
 .clinical-data-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -590,7 +584,6 @@ body {
     color: var(--text-main);
 }
 
-/* 🔬 Study Highlight Chips */
 .study-badge-row {
     display: flex;
     flex-wrap: wrap;

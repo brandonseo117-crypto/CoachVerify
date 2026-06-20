@@ -22,34 +22,52 @@ def index():
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
 
-# Pydantic Schema with all required telemetry fields for frontend
+# 🔬 Expanded individual paper schema to hold custom metadata per reference source
 
 
 class IndividualPaper(BaseModel):
     title: str = Field(description="Paper title")
     journal: str = Field(description="Journal name")
-    pubmed_link: str = Field(description="URL to PubMed or source")
-    paper_reliability: int = Field(description="0-100 reliability score")
+    pubmed_link: str = Field(description="URL to PubMed or source study page")
+    paper_reliability: int = Field(
+        description="0-100 reliability score rating")
+    study_type: str = Field(
+        description="The specific methodology framework layout design (e.g., Randomized Controlled Trial, Case Report, Systematic Review).")
+    publication_year: str = Field(
+        description="The explicit year of publishing.")
+    sample_size: str = Field(
+        description="The numerical sample size integer value, e.g., '14' or '1'. Do not write N/A if extractable.")
+    target_cohort: str = Field(
+        description="Detailed baseline population cohort demographics or target sample metrics.")
 
 
 class AuditResultSchema(BaseModel):
     audit_text: str = Field(
-        description="Main response text containing the fully constructed HTML layout matching the template directive exactly.")
+        description="Main response text containing a clean, direct, 2-3 sentence professional clinical assessment summary of the core consensus findings.")
     safety_score: int = Field(
-        description="0-100 score evaluating protocol safety. If a generic greeting or non-supplement question, return 100.")
+        description="0-100 score evaluating protocol safety. Default to 100 if safe/unrelated.")
     performance_score: int = Field(
         description="0-100 score evaluating performance enhancement impact. Default to 0 if irrelevant.")
     reliability_score: int = Field(
-        description="0-100 score for evidence quality. Gold standard = 80+, Limited = 50-79, Low = <50.")
+        description="Overall evidence quality index rating.")
     matched_paper: str = Field(
-        description="The citation title/journal source matched from the DB or external medical consensus.")
+        description="The primary reference study title matched from the database.")
+    study_type: str = Field(
+        description="Default primary reference methodology framework design.")
+    journal_authority: str = Field(
+        description="Primary publishing journal authority.")
+    publication_year: str = Field(
+        description="Default publication year metadata.")
+    sample_size: str = Field(
+        description="Primary dataset aggregate sample size count.")
+    target_cohort: str = Field(
+        description="Primary cohort overview demographic metadata.")
     translated_consensus: str = Field(
-        description="The primary conversational response from CoachVerify. Keep it punchy, athletic, direct, and professional.")
+        description="Plain-English conversational clinical summary verdict.")
     alternative: Optional[str] = Field(
-        default=None,
-        description="Recommended clinical alternatives or pivots if the queried protocol is unsafe or ineffective.")
+        default=None, description="Recommended safe alternatives if the query is risky/unproductive.")
     individual_papers: List[IndividualPaper] = Field(
-        description="Array of supporting research papers with reliability scoring.")
+        description="Array of supporting research papers with individual metadata matrices filled completely.")
 
 
 @app.route('/api/audit', methods=['POST'])
@@ -59,47 +77,18 @@ def audit_reliability():
         if not user_data:
             return jsonify({"error": "Invalid JSON payload provided."}), 400
 
-        # Extract user input
         claim = user_data.get('claim', '').strip()
-
         if not claim:
             return jsonify({"error": "Message content is required."}), 400
 
-        # Build the structured HTML layout engine prompt
-        prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the structural depth and objective visual layout of Consensus AI. 
-Your primary goal is to dissect athlete queries using data-grounded science and output beautifully structured, highly visual HTML inside the 'audit_text' variable.
+        prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
+Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
 
-CRITICAL TONE DIRECTIVES:
-1. Speak normally, professionally, and clinically. Never use generic filler words, dramatic jargon, or high-energy sports-coach clichés.
-2. Talk like a premier sports scientist or elite clinical researcher: calm, authoritative, precise, and objective.
-3. Be direct and concise. State the medical facts clearly without unnecessary conversational filler text.
-
-FORMATTING & RESPONSE ARCHITECTURE (YOU MUST USE THIS EXACT HTML LAYOUT FOR THE 'audit_text' FIELD):
-You must structure the text assigned to 'audit_text' using the exact HTML template provided below. Do not use any emojis, and fill in the brackets with the relevant information based on the matching database keys or general medical consensus. Do not use markdown syntax inside the HTML.
-
-<div class="scientific-response-block">
-    <div class="consensus-summary-card">
-        <span class="summary-header">SYSTEM SYNTHESIS CONSENSUS</span>
-        <p>[Provide a calm, direct, and highly concise synthesis of the medical/scientific consensus here. If the practice is unsafe or ineffective, explain why clearly.]</p>
-    </div>
-
-    <div class="study-badge-row">
-        <span class="study-pill">DESIGN: [Insert Study Type from database, e.g., Randomized Controlled Trial]</span>
-        <span class="study-pill">JOURNAL: [Insert Journal Authority from database, e.g., Biology of Sport]</span>
-        <span class="study-pill">YEAR: [Insert Publication Year]</span>
-    </div>
-
-    <div class="clinical-data-grid">
-        <div class="data-metric-tile">
-            <span class="tile-label">Sample Size</span>
-            <span class="tile-value">N = [Insert Sample Size number]</span>
-        </div>
-        <div class="data-metric-tile">
-            <span class="tile-label">Target Cohort</span>
-            <span class="tile-value">[Insert brief Population Demographics summary from database]</span>
-        </div>
-    </div>
-</div>
+CRITICAL TONE & STRUCTURAL DIRECTIVES:
+- Speak normally, professionally, and clinically. Never use generic filler words, dramatic jargon, or sports-coach clichés.
+- Talk like a premier sports scientist: calm, authoritative, precise, and objective.
+- STIPULATION: Use standard alphanumeric text and punctuation only. Do not output any graphical emojis or pictorial symbols in any text field.
+- CORE TASK: For every object item in the 'individual_papers' array, you must extract or logically map the specific 'sample_size', 'target_cohort', 'study_type', and 'publication_year' metrics from the database source entry. Do not use generic fallback text if specific data is available.
 
 ATHLETE QUERY: {claim}
 
@@ -107,16 +96,9 @@ VERIFIED SPORTS SCIENCE GROUNDING DATABASE:
 {json.dumps(SPORTS_SCIENCE_DB, indent=2)}
 
 RETURN SCHEMA FIELD REQUIREMENT MATCHING:
-1. audit_text: Wrap the complete HTML block designed above exactly into this string field.
-2. safety_score: 0-100 evaluation integer matching your database find.
-3. performance_score: 0-100 evaluation integer matching your database find.
-4. reliability_score: 0-100 evidence quality rating integer.
-5. matched_paper: Title string of primary reference matched.
-6. translated_consensus: Plain-English conversational summary string.
-7. alternative: Safe alternative recommendation string (or null if practice is perfectly safe).
-8. individual_papers: List of individual source paper objects extracted from the database matching the criteria.
-
-Return ONLY valid JSON matching the schema parameters perfectly. No markdown formatting around the outer JSON object, no code blocks."""
+1. audit_text: Provide a concise clinical overview paragraph summarizing the core consensus findings. Do not insert HTML tags or markdown formatting.
+2. Fill all other schema parameter fields—including the complete metadata fields nested within the individual_papers array items—with clean text values matching the database context.
+"""
 
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -139,7 +121,6 @@ Return ONLY valid JSON matching the schema parameters perfectly. No markdown for
 
         raw_text = ai_response.text.strip()
 
-        # Strip code fences if model wraps them mistakenly
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()
             if lines[0].startswith("```json") or lines[0].startswith("```"):
@@ -160,9 +141,6 @@ Return ONLY valid JSON matching the schema parameters perfectly. No markdown for
 
         return jsonify(processed_result), 200
 
-    except json.JSONDecodeError as je:
-        print(f"Payload JSON Parse Error: {str(je)}")
-        return jsonify({"error": "Invalid request", "details": "Could not parse request body"}), 400
     except Exception as e:
         print(f"Backend error: {str(e)}")
         import traceback
