@@ -1,3 +1,5 @@
+let isRequestPending = false;
+
 function navigateTo(stateId) {
     document.querySelectorAll('.view-state').forEach(state => {
         state.classList.remove('active-state');
@@ -17,6 +19,8 @@ function fillClaim(text) {
 
 async function submitAudit(event) {
     event.preventDefault();
+    if (isRequestPending) return;
+
     const inputElement = document.getElementById('claimInput');
     const claimText = inputElement.value.trim();
     if (!claimText) return;
@@ -40,6 +44,14 @@ async function submitAudit(event) {
     if (loader) loader.style.display = 'flex';
 
     try {
+        isRequestPending = true;
+        const submitButton = document.getElementById('submitButton');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.add('disabled');
+        }
+        if (inputElement) inputElement.disabled = true;
+
         const response = await fetch('/api/audit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,11 +74,13 @@ async function submitAudit(event) {
         if (loader) loader.style.display = 'none';
         console.error("Network analysis error:", err);
     } finally {
+        isRequestPending = false;
         const submitButton = document.getElementById('submitButton');
         if (submitButton) {
             submitButton.disabled = false;
             submitButton.classList.remove('disabled');
         }
+        if (inputElement) inputElement.disabled = false;
     }
 }
 
