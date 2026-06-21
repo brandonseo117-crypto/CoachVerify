@@ -30,6 +30,12 @@ async function submitAudit(event) {
     inputElement.value = '';
     chatHistory.scrollTop = chatHistory.scrollHeight;
 
+    const submitButton = document.getElementById('submitButton');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.classList.add('disabled');
+    }
+
     const loader = document.getElementById('chatLoader');
     if (loader) loader.style.display = 'flex';
 
@@ -55,6 +61,12 @@ async function submitAudit(event) {
     } catch (err) {
         if (loader) loader.style.display = 'none';
         console.error("Network analysis error:", err);
+    } finally {
+        const submitButton = document.getElementById('submitButton');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('disabled');
+        }
     }
 }
 
@@ -86,10 +98,8 @@ function renderMetrics(data) {
 
             const linkUrl = paper.pubmed_link || "https://pubmed.ncbi.nlm.nih.gov/";
 
-            // Extract the reliability integer or default to '--'
             const qualityRating = paper.paper_reliability !== undefined ? `${paper.paper_reliability}% Quality` : '--';
 
-            // Dynamic color selection for the badge depending on evidence rigor thresholds
             const badgeColor = (paper.paper_reliability >= 85) ? 'var(--color-safe)' : 'var(--color-warning)';
 
             card.innerHTML = `
