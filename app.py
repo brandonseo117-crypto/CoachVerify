@@ -22,7 +22,7 @@ def index():
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
 
-# Intent Routing Schema
+# intent Routing Schema
 
 
 class IntentSchema(BaseModel):
@@ -30,7 +30,7 @@ class IntentSchema(BaseModel):
         description="Must be exactly 'RESEARCH_DEEP_DIVE' if they ask about a compound/claim/trend, or 'CASUAL_CONVERSATION' if it is a generic chat, greeting, or follow-up question."
     )
 
-# Individual paper schema
+# individual paper schema
 
 
 class IndividualPaper(BaseModel):
@@ -47,8 +47,6 @@ class IndividualPaper(BaseModel):
         description="The numerical sample size integer value, e.g., '14' or '1'. Do not write N/A if extractable.")
     target_cohort: str = Field(
         description="Detailed baseline population cohort demographics or target sample metrics.")
-
-# Combined output schema to prevent frontend crashes
 
 
 class AuditResultSchema(BaseModel):
@@ -120,10 +118,10 @@ def audit_reliability():
                 f"Routing check failed, defaulting to deep dive: {route_err}")
             chosen_route = "RESEARCH_DEEP_DIVE"
 
-        # Execute route specific logic
+        # execute route specific logic
 
         if chosen_route == "CASUAL_CONVERSATION":
-            # Run lightweight casual chat prompt without database grounding, focused on friendly, clear communication
+            # run lightweight casual chat prompt without database grounding, focused on friendly, clear communication
             chat_prompt = f"""
             You are CoachVerify. Answer this athlete's casual message or follow-up question in a friendly, 
             professional, and completely clear manner. Use plain English without jargon or data parameters.
@@ -141,7 +139,7 @@ def audit_reliability():
                 )
             )
         else:
-            # Run your original deep dive database search pipeline
+            # run your original deep dive database search pipeline
             prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
 Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
 
