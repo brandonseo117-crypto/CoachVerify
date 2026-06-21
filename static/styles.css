@@ -44,7 +44,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgb(0, 89, 255);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
@@ -52,7 +52,7 @@ body {
 .app-title {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--text-main);
+    color: rgba(255, 255, 255, 0.9);
     letter-spacing: -0.5px;
 }
 
@@ -217,7 +217,7 @@ body {
 }
 
 .submit-btn:hover:not(:disabled) {
-    background: #1d4ed8;
+    background: #1d4fd7;
 }
 
 .submit-btn.disabled,
