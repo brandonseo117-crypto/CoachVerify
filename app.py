@@ -22,7 +22,15 @@ def index():
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
 
-# 🔬 Expanded individual paper schema to hold custom metadata per reference source
+# Intent Routing Schema
+
+
+class IntentSchema(BaseModel):
+    route: str = Field(
+        description="Must be exactly 'RESEARCH_DEEP_DIVE' if they ask about a compound/claim/trend, or 'CASUAL_CONVERSATION' if it is a generic chat, greeting, or follow-up question."
+    )
+
+# Individual paper schema
 
 
 class IndividualPaper(BaseModel):
@@ -40,34 +48,36 @@ class IndividualPaper(BaseModel):
     target_cohort: str = Field(
         description="Detailed baseline population cohort demographics or target sample metrics.")
 
+# Combined output schema to prevent frontend crashes
+
 
 class AuditResultSchema(BaseModel):
     audit_text: str = Field(
-        description="Main response text containing a clean, direct, 2-3 sentence professional clinical assessment summary of the core consensus findings.")
+        description="Main response text containing a clean, direct, professional clinical assessment summary, or a direct conversational reply.")
     safety_score: int = Field(
-        description="0-100 score evaluating protocol safety. Default to 100 if safe/unrelated.")
+        default=100, description="0-100 score evaluating protocol safety. Default to 100 if safe/unrelated.")
     performance_score: int = Field(
-        description="0-100 score evaluating performance enhancement impact. Default to 0 if irrelevant.")
+        default=0, description="0-100 score evaluating performance enhancement impact. Default to 0 if irrelevant.")
     reliability_score: int = Field(
-        description="Overall evidence quality index rating.")
+        default=100, description="Overall evidence quality index rating.")
     matched_paper: str = Field(
-        description="The primary reference study title matched from the database.")
+        default="N/A", description="The primary reference study title matched from the database.")
     study_type: str = Field(
-        description="Default primary reference methodology framework design.")
+        default="N/A", description="Default primary reference methodology framework design.")
     journal_authority: str = Field(
-        description="Primary publishing journal authority.")
+        default="N/A", description="Primary publishing journal authority.")
     publication_year: str = Field(
-        description="Default publication year metadata.")
+        default="N/A", description="Default publication year metadata.")
     sample_size: str = Field(
-        description="Primary dataset aggregate sample size count.")
+        default="N/A", description="Primary dataset aggregate sample size count.")
     target_cohort: str = Field(
-        description="Primary cohort overview demographic metadata.")
+        default="N/A", description="Primary cohort overview demographic metadata.")
     translated_consensus: str = Field(
-        description="Plain-English conversational clinical summary verdict.")
+        default="Conversational response mode active.", description="Plain-English conversational clinical summary verdict.")
     alternative: Optional[str] = Field(
         default=None, description="Recommended safe alternatives if the query is risky/unproductive.")
     individual_papers: List[IndividualPaper] = Field(
-        description="Array of supporting research papers with individual metadata matrices filled completely.")
+        default=[], description="Array of supporting research papers with individual metadata matrices filled completely.")
 
 
 @app.route('/api/audit', methods=['POST'])
@@ -81,17 +91,68 @@ def audit_reliability():
         if not claim:
             return jsonify({"error": "Message content is required."}), 400
 
-        prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
+        # routing check to determine if this is a research deep dive or a casual conversation, to optimize response style and database grounding
+        router_prompt = f"""
+        Analyze the user's message and determine if they are initiating a science-backed trend analysis 
+        on a specific compound, supplement, or recovery strategy, or if they are just chatting naturally or asking a casual follow-up.
+        
+        Athlete says: "{claim}"
+        
+        Select exactly one route options:
+        - "RESEARCH_DEEP_DIVE" (If they explicitly name a supplement, wellness trend, or require database records)
+        - "CASUAL_CONVERSATION" (If they say hello, thank you, or ask an open-ended conversational follow-up)
+        """
+
+        try:
+            intent_response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=router_prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=IntentSchema,
+                    temperature=0.1
+                )
+            )
+            intent_json = json.loads(intent_response.text.strip())
+            chosen_route = intent_json.get("route", "RESEARCH_DEEP_DIVE")
+        except Exception as route_err:
+            print(
+                f"Routing check failed, defaulting to deep dive: {route_err}")
+            chosen_route = "RESEARCH_DEEP_DIVE"
+
+        # Execute route specific logic
+
+        if chosen_route == "CASUAL_CONVERSATION":
+            # Run lightweight casual chat prompt without database grounding, focused on friendly, clear communication
+            chat_prompt = f"""
+            You are CoachVerify. Answer this athlete's casual message or follow-up question in a friendly, 
+            professional, and completely clear manner. Use plain English without jargon or data parameters.
+            
+            Athlete says: "{claim}"
+            """
+
+            ai_response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=chat_prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AuditResultSchema,
+                    temperature=0.5
+                )
+            )
+        else:
+            # Run your original deep dive database search pipeline
+            prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
 Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
 
 CRITICAL TONE & PLAIN-LANGUAGE STRUCTURAL DIRECTIVES:
-- Speak normally, professionally, and objectively[cite: 35, 38]. Do not use generic filler words, dramatic jargon, or sports-coach clichés.
-- MANDATE: The 'audit_text' field must be written in clear, plain language accessible to a high school student or parent under stress[cite: 8, 35, 91]. 
+- Speak normally, professionally, and objectively. Do not use generic filler words, dramatic jargon, or sports-coach clichés.
+- MANDATE: The 'audit_text' field must be written in clear, plain language accessible to a high school student or parent under stress. 
 - Avoid dense academic or medical jargon. If a technical term is found in the database, translate it into everyday English:
   * Do NOT say 'acute myocardial infarction' -> Say 'a sudden, severe heart attack'.
   * Do NOT say 'esophageal damage or ulcerations' -> Say 'painful throat burns and sores'.
   * Do NOT say 'ingesting raw caustic compounds' -> Say 'swallowing highly concentrated dry powders'.
-- Keep your explanation to 2-3 direct sentences that move the user from uncertainty to clear, immediate action[cite: 8, 19, 92].
+- Keep your explanation to 2-3 direct sentences that move the user from uncertainty to clear, immediate action.
 - STIPULATION: Use standard alphanumeric text and punctuation only. Do not output any graphical emojis or pictorial symbols.
 
 ATHLETE QUERY: {claim}
@@ -103,25 +164,17 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
 1. audit_text: Provide a concise clinical overview paragraph summarizing the core consensus findings. Do not insert HTML tags or markdown formatting.
 2. Fill all other schema parameter fields—including the complete metadata fields nested within the individual_papers array items—with clean text values matching the database context.
 """
-
-        config = types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=AuditResultSchema,
-            temperature=0.2
-        )
-
-        try:
             ai_response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=prompt,
-                config=config
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=AuditResultSchema,
+                    temperature=0.2
+                )
             )
-        except Exception as api_error:
-            print(f"Gemini API Error: {str(api_error)}")
-            return jsonify({
-                "error": "AI service unavailable",
-                "details": f"Gemini API error: {str(api_error)}"
-            }), 503
+
+        # clean up response
 
         raw_text = ai_response.text.strip()
 
@@ -137,7 +190,6 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
             processed_result = json.loads(raw_text)
         except json.JSONDecodeError as je:
             print(f"JSON Parse Error: {str(je)}")
-            print(f"Raw response text: {raw_text[:500]}")
             return jsonify({
                 "error": "Response parsing failed",
                 "details": f"AI returned invalid JSON: {str(je)}"

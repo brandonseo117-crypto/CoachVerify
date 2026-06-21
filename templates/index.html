@@ -4,74 +4,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoachVerify - Varsity Performance Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>CoachVerify // Sports Science Engine</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* View state toggles */
+        .view-state {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .view-state.active-state {
+            display: flex;
+        }
+
+        .hero-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            background: #ffffff;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="top-navbar">
-        <div class="nav-brand">ATHLETE<span>VERIFY</span></div>
-        <div class="nav-status">
-            <span class="status-dot"></span> Team Performance • Secure
-        </div>
-    </nav>
 
-    <main class="app-container">
-
-        <section id="state-home" class="view-state active-state">
-            <div class="hero-content">
-                <div class="glitch-logo">ATHLETE<span>VERIFY</span></div>
-                <h1 class="hero-title">Team Performance Hub</h1>
-                <p class="hero-subtitle">Evidence-backed checks for supplements, training plans, and recovery routines —
-                    designed for student-athletes and coaches.</p>
-                <button class="send-btn" onclick="navigateTo('state-chat')">Open Assessment Console</button>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="app-title" style="cursor: pointer;" onclick="navigateTo('state-home')">CoachVerify</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Verified Sports Science Engine
             </div>
-        </section>
+        </header>
 
-        <section id="state-chat" class="view-state">
-            <div class="chat-layout-wrapper">
+        <div id="state-home" class="view-state active-state">
+            <div class="hero-content">
+                <h1 class="hero-title">A smarter way to perform</h1>
+                <p class="hero-subtitle">Evidence-backed checks for supplements, training plans, and recovery routines.
+                    Elite performance tips translated into plain language for student-athletes, parents, and coaches.
+                </p>
+                <button class="submit-btn" style="padding: 14px 28px; font-size: 1rem; border-radius: 30px;"
+                    onclick="navigateTo('state-chat')">Open Assessment Console</button>
+            </div>
+        </div>
 
-                <div class="chat-container">
-                    <div id="chatThread" class="chat-thread">
-                        <div class="message-bubble coach">
-                            <p><strong>[SYSTEM]: Athlete assessment ready.</strong></p>
-                            <p>Welcome. Paste a supplement, training claim, or recovery routine to compare against
-                                clinical evidence and safety guidance.</p>
-                        </div>
+        <main id="state-chat" class="workspace-grid view-state" style="flex-direction: row;">
+
+            <section class="chat-section">
+                <div class="chat-history" id="chatHistory">
+                    <div class="chat-bubble ai">
+                        Hello! Ask me about any viral fitness claims, workout routines, or supplements you see online. I
+                        will instantly cross-reference them against peer-reviewed sports science databases.
                     </div>
-
-                    <div id="inlineChatLoader"
-                        style="display: none; padding: 12px 24px; background: rgba(7, 9, 19, 0.9); align-items: center; gap: 12px; border-top: 1px solid var(--border-subtle);">
-                        <div class="cyber-spinner" style="width: 20px; height: 20px; margin: 0; border-width: 2px;">
-                        </div>
-                        <span class="loading-sub">Cross-checking peer-reviewed logs...</span>
-                    </div>
-
-                    <form id="chatConsoleForm" class="chat-input-bar">
-                        <input type="text" id="athleteMessageInput"
-                            placeholder="Ask: 'Is this supplement safe for college athletes?'" autocomplete="off"
-                            required>
-                        <button type="submit" class="send-btn">Analyze</button>
-                    </form>
                 </div>
 
-                <aside id="bibliographySidebar" class="bibliography-sidebar">
-                    <div class="sidebar-header">
-                        <h3>SUPPORTING LITERATURE</h3>
-                        <p class="loading-sub">TELEMETRY SOURCES</p>
+                <div class="suggestion-container">
+                    <div class="suggest-chip" onclick="fillClaim('Is dry-scooping safe?')">⚠️ Dry Scooping</div>
+                    <div class="suggest-chip" onclick="fillClaim('Is GHK-Cu safe for track athletes under 18?')">🧬
+                        GHK-Cu Peptide</div>
+                    <div class="suggest-chip" onclick="fillClaim('Does mouth taping improve recovery sleep?')">💤 Mouth
+                        Taping</div>
+                    <div class="suggest-chip"
+                        onclick="fillClaim('Should a teenager train to absolute failure every set to build muscle?')">
+                        🏋️ Training to Failure</div>
+                </div>
+
+                <div id="chatLoader"
+                    style="display: none; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+                    <div class="loader-spinner"
+                        style="width: 16px; height: 16px; border: 2px solid var(--border-subtle); border-top: 2px solid var(--color-accent); border-radius: 50%; animation: spin 0.8s linear infinite;">
                     </div>
-                    <div id="sidebarSourcesContainer" class="sidebar-sources-list">
-                        <p class="empty-sidebar-text">Awaiting transmission payload validation...</p>
+                    <span>Working...</span>
+                </div>
+
+                <div class="input-panel">
+                    <form id="auditForm" onsubmit="submitAudit(event)">
+                        <div class="input-group">
+                            <input type="text" id="claimInput" class="athlete-input"
+                                placeholder="Type a trend or supplement claim here..." autocomplete="off">
+                            <button type="submit" class="submit-btn">Verify</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="analytics-sidebar">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="metric-card">
+                        <div class="metric-header">Safety Rating</div>
+                        <div class="metric-value" id="safetyVal" style="color: var(--text-muted);">--</div>
                     </div>
-                </aside>
+                    <div class="metric-card">
+                        <div class="metric-header">Performance Impact</div>
+                        <div class="metric-value" id="perfVal" style="color: var(--text-muted);">--</div>
+                    </div>
+                </div>
 
-            </div>
-        </section>
+                <div class="metric-card">
+                    <div class="metric-header">Primary Evidence Meta</div>
+                    <div id="metaGrid" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
+                        Submit an evaluation query to populate peer-reviewed metrics.
+                    </div>
+                </div>
 
-    </main>
+                <div>
+                    <div class="metric-header" style="margin-bottom: 10px;">Supporting Research Papers</div>
+                    <div id="papersStream"></div>
+                </div>
+            </section>
+        </main>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <footer class="legal-footer">
+            COACHVERIFY PROVIDES ARCHIVED RESEARCH SYNTHESIS FOR INFORMATIONAL PURPOSES. PROTOCOLS MUST BE REVIEWED BY A
+            CERTIFIED HEALTHCARE PROFESSIONAL BEFORE EXECUTION.
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
 </body>
 
 </html>

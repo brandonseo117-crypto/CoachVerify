@@ -1,233 +1,126 @@
-// Single page navigation
 function navigateTo(stateId) {
     document.querySelectorAll('.view-state').forEach(state => {
         state.classList.remove('active-state');
+        state.style.display = 'none';
     });
 
     const targetState = document.getElementById(stateId);
     if (targetState) {
         targetState.classList.add('active-state');
+        targetState.style.display = (stateId === 'state-chat') ? 'flex' : 'block';
     }
 }
 
-// chat interface
-document.getElementById('chatConsoleForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+function fillClaim(text) {
+    document.getElementById('claimInput').value = text;
+}
 
-    const inputField = document.getElementById('athleteMessageInput');
-    const userMessage = inputField.value.trim();
-    if (!userMessage) return;
+async function submitAudit(event) {
+    event.preventDefault();
+    const inputElement = document.getElementById('claimInput');
+    const claimText = inputElement.value.trim();
+    if (!claimText) return;
 
-    appendMessage(userMessage, 'athlete');
-    inputField.value = ''; // Clear out the input box
+    const chatHistory = document.getElementById('chatHistory');
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble user';
+    userBubble.textContent = claimText;
+    chatHistory.appendChild(userBubble);
 
-    const loader = document.getElementById('inlineChatLoader');
-    loader.style.display = 'flex';
-    const thread = document.getElementById('chatThread');
-    thread.scrollTop = thread.scrollHeight;
+    inputElement.value = '';
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 
-    const payload = {
-        profile: 'Student-Athlete',
-        claim: userMessage,
-        routine: 'Context requested within chat dialogue flow'
-    };
+    const loader = document.getElementById('chatLoader');
+    if (loader) loader.style.display = 'flex';
 
     try {
         const response = await fetch('/api/audit', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ claim: claimText })
         });
 
-        let data;
-        try {
-            data = await response.json();
-        } catch (jsonError) {
-            console.error("Failed to parse JSON response:", jsonError);
-            const textResponse = await response.text();
-            throw new Error(`Invalid response format: ${textResponse.substring(0, 200)}`);
-        }
+        const data = await response.json();
 
-        if (data.error) {
-            console.error("API Error:", data.error, data.details);
-            appendMessage(`Error: ${data.error}. Details: ${data.details || 'Unknown error'}`, 'coach');
-        } else if (!response.ok) {
-            throw new Error(`Server returned HTTP code ${response.status}`);
-        } else if (!data.audit_text) {
-            console.error("Missing audit_text in response:", data);
-            appendMessage("Error: Incomplete response from analysis engine. Please try again.", 'coach');
-        } else {
-            appendMessage(data.audit_text, 'coach', data);
-        }
+        if (loader) loader.style.display = 'none';
 
-    } catch (error) {
-        console.error("Error communicating with verification pipeline:", error);
-        appendMessage(`Transmission error: ${error.message}`, 'coach');
-    } finally {
-        loader.style.display = 'none';
+        const aiBubble = document.createElement('div');
+        aiBubble.className = 'chat-bubble ai';
+        aiBubble.textContent = data.audit_text || "Analysis complete.";
+        chatHistory.appendChild(aiBubble);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        renderMetrics(data);
+
+    } catch (err) {
+        if (loader) loader.style.display = 'none';
+        console.error("Network analysis error:", err);
     }
-});
+}
 
-function appendMessage(text, sender, data = null) {
-    const thread = document.getElementById('chatThread');
-    const bubble = document.createElement('div');
-    bubble.className = `message-bubble ${sender}`;
+function renderMetrics(data) {
+    const sVal = document.getElementById('safetyVal');
+    const pVal = document.getElementById('perfVal');
 
-    if (sender === 'athlete') {
-        bubble.innerText = text;
-    } else {
-        let content = '';
+    // Output integers explicitly structured out of 100 for readability
+    sVal.textContent = data.safety_score !== undefined ? `${data.safety_score}/100` : '--';
+    pVal.textContent = data.performance_score !== undefined ? `${data.performance_score}/100` : '--';
 
-        if (data && typeof data.safety_score !== 'undefined') {
-            const safety = parseInt(data.safety_score);
-            let indicatorColor = 'var(--neon-green)';
+    sVal.style.color = (data.safety_score >= 70) ? 'var(--color-safe)' : (data.safety_score >= 40) ? 'var(--color-warning)' : 'var(--color-danger)';
+    pVal.style.color = 'var(--color-accent)';
 
-            if (safety < 40) {
-                indicatorColor = 'var(--neon-red)';
-            } else if (safety < 75) {
-                indicatorColor = 'var(--neon-cyan)';
-            }
+    document.getElementById('metaGrid').innerHTML = `
+        <strong>Journal:</strong> ${data.journal_authority || 'N/A'}<br>
+        <strong>Design Frame:</strong> ${data.study_type || 'N/A'}<br>
+        <strong>Year:</strong> ${data.publication_year || 'N/A'}<br>
+        <strong>Sample Metric:</strong> N = ${data.sample_size || 'N/A'}
+    `;
 
-            // Construct Consensus-Style Layout modules cleanly on the client side
-            content += `
-                <div class="scientific-response-block" style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
-                    <div class="consensus-summary-card" style="background: rgba(255, 255, 255, 0.02); border-left: 3px solid ${indicatorColor}; padding: 16px; border-radius: 4px 12px 12px 4px;">
-                        <span class="summary-header" style="font-family: monospace; font-size: 0.75rem; color: ${indicatorColor}; letter-spacing: 1px; font-weight: 700; display: block; margin-bottom: 6px;">ASSESSMENT SUMMARY</span>
-                        <p class="consensus-main-paragraph" style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);">${data.audit_text || ''}</p>
+    const stream = document.getElementById('papersStream');
+    stream.innerHTML = '';
+
+    if (data.individual_papers && data.individual_papers.length > 0) {
+        data.individual_papers.forEach((paper, index) => {
+            const card = document.createElement('div');
+            card.className = `source-card ${index === 0 ? 'active' : ''}`;
+
+            const linkUrl = paper.pubmed_link || "https://pubmed.ncbi.nlm.nih.gov/";
+
+            // Extract the reliability integer or default to '--'
+            const qualityRating = paper.paper_reliability !== undefined ? `${paper.paper_reliability}% Quality` : '--';
+
+            // Dynamic color selection for the badge depending on evidence rigor thresholds
+            const badgeColor = (paper.paper_reliability >= 85) ? 'var(--color-safe)' : 'var(--color-warning)';
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px;">
+                    <div class="source-title" style="margin: 0; flex: 1;">
+                        <a href="${linkUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); text-decoration: none; border-bottom: 1px dashed transparent;" onclick="event.stopPropagation()" onmouseover="this.style.borderBottom='1px solid var(--color-accent)'" onmouseout="this.style.borderBottom='1px dashed transparent'">
+                            ${paper.title}
+                        </a>
                     </div>
-
-                    <div class="study-badge-row" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <span class="study-pill design-chip" style="font-size: 0.7rem; font-family: monospace; padding: 4px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); border-radius: 100px; color: var(--text-sub);">DESIGN: ${data.study_type || 'Clinical Evaluation'}</span>
-                        <span class="study-pill journal-chip" style="font-size: 0.7rem; font-family: monospace; padding: 4px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); border-radius: 100px; color: var(--text-sub);">JOURNAL: ${data.journal_authority || 'Sports Medicine'}</span>
-                        <span class="study-pill year-chip" style="font-size: 0.7rem; font-family: monospace; padding: 4px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); border-radius: 100px; color: var(--text-sub);">YEAR: ${data.publication_year || 'N/A'}</span>
-                    </div>
-
-                    <div class="clinical-data-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-                        <div class="data-metric-tile" style="background: rgba(7, 9, 19, 0.6); border: 1px solid var(--border-subtle); padding: 10px 14px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px;">
-                            <span class="tile-label" style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; text-transform: uppercase;">Sample Size</span>
-                            <span class="tile-value sample-tile" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">N = ${data.sample_size || 'N/A'}</span>
-                        </div>
-                        <div class="data-metric-tile" style="background: rgba(7, 9, 19, 0.6); border: 1px solid var(--border-subtle); padding: 10px 14px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px;">
-                            <span class="tile-label" style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; text-transform: uppercase;">Target Cohort</span>
-                            <span class="tile-value cohort-tile" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">${data.target_cohort || 'General Population'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="coach-meta-badge research-summary-panel" style="border-left: 2px solid ${indicatorColor}; margin-top: 14px; padding-left: 10px; background: rgba(255,255,255,0.01); padding: 12px; border-radius: 0 8px 8px 0;">
-                    <span class="summary-panel-title" style="color: ${indicatorColor}; font-weight: 700; font-family: monospace; font-size: 0.75rem; letter-spacing: 0.5px;"> RESEARCH SUMMARY: PRIMARY SELECTION</span><br>
-                    <span style="font-size: 0.8rem; margin-top: 6px; display: block; color: var(--text-main);">
-                        Safety Index: <strong class="safety-label">${data.safety_score}/100</strong> | Evidence Quality: <strong class="reliability-label">${data.reliability_score || data.performance_score}/100</strong>
-                    </span>
-                    <span class="reference-label" style="font-size: 0.8rem; display: block; margin-top: 6px; color: var(--text-sub); line-height: 1.3;">
-                        Active Reference: ${data.matched_paper || 'General Guidelines'}
+                    <span style="font-size: 0.75rem; font-weight: 700; color: ${badgeColor}; background: #f8fafc; border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">
+                        ${qualityRating}
                     </span>
                 </div>
+                <div class="source-meta">${paper.journal} • ${paper.publication_year} • N=${paper.sample_size}</div>
             `;
 
-            if (data.alternative) {
-                content += `
-                    <div class="clinical-pivot-box" style="margin-top: 12px; padding: 12px; background: rgba(255, 184, 28, 0.04); border: 1px dashed var(--neon-cyan); border-radius: 8px;">
-                        <span style="color: var(--neon-cyan); font-weight: 700; font-size: 0.8rem; font-family: monospace;">RECOMMENDED ADJUSTMENT</span>
-                        <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: var(--text-main); line-height: 1.4;">${data.alternative}</p>
-                    </div>
+            card.onclick = () => {
+                document.querySelectorAll('.source-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                document.getElementById('metaGrid').innerHTML = `
+                    <strong>Journal:</strong> ${paper.journal}<br>
+                    <strong>Design Frame:</strong> ${paper.study_type}<br>
+                    <strong>Year:</strong> ${paper.publication_year}<br>
+                    <strong>Sample Metric:</strong> N = ${paper.sample_size}
                 `;
-            }
+            };
 
-            // data source sidebar
-            const sidebarContainer = document.getElementById('sidebarSourcesContainer');
-            if (sidebarContainer) {
-                sidebarContainer.innerHTML = '';
-
-                if (Array.isArray(data.individual_papers) && data.individual_papers.length > 0) {
-                    data.individual_papers.forEach((paper, index) => {
-                        const reliability = parseInt(paper.paper_reliability || 80);
-                        let badgeColor = 'rgba(0, 255, 135, 0.15)';
-                        let textColor = 'var(--neon-green)';
-
-                        if (reliability < 50) {
-                            badgeColor = 'rgba(255, 51, 102, 0.15)';
-                            textColor = 'var(--neon-red)';
-                        } else if (reliability < 75) {
-                            badgeColor = 'rgba(0, 223, 250, 0.15)';
-                            textColor = 'var(--neon-cyan)';
-                        }
-
-                        const card = document.createElement('div');
-                        card.className = 'source-sidebar-card';
-                        card.style.cursor = 'pointer';
-                        card.style.transition = 'all 0.2s ease';
-                        card.style.border = index === 0 ? `1px solid ${textColor}` : '1px solid var(--border-subtle)';
-
-                        card.innerHTML = `
-                                <div class="source-title-link" style="font-weight:600; color:var(--text-main); margin-bottom:4px; font-size:0.85rem; line-height:1.3;">
-                                    ${paper.title}
-                                </div>
-                                <div class="source-meta-row">
-                                    <span class="source-journal" style="font-size:0.7rem; color:var(--text-muted);">${paper.journal || 'Sports Med Journal'}</span>
-                                    <span class="source-reliability-tag" style="background: ${badgeColor}; color: ${textColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-family: monospace;">
-                                        RIGOR: ${reliability}%
-                                    </span>
-                                </div>
-                            `;
-
-                        card.addEventListener('click', (e) => {
-                            e.preventDefault();
-
-                            const responseBlock = bubble.querySelector('.scientific-response-block');
-                            const summaryPanel = bubble.querySelector('.research-summary-panel');
-
-                            if (responseBlock) {
-
-                                responseBlock.querySelector('.design-chip').innerText = `DESIGN: ${paper.study_type || 'Clinical Trial'}`;
-                                responseBlock.querySelector('.journal-chip').innerText = `JOURNAL: ${paper.journal || 'Sports Med Journal'}`;
-                                responseBlock.querySelector('.year-chip').innerText = `YEAR: ${paper.publication_year || 'N/A'}`;
-
-
-                                responseBlock.querySelector('.sample-tile').innerText = `N = ${paper.sample_size || 'N/A'}`;
-                                responseBlock.querySelector('.cohort-tile').innerText = `${paper.target_cohort || 'Monitored Cohort'}`;
-                            }
-
-                            if (summaryPanel) {
-
-                                summaryPanel.querySelector('.summary-panel-title').innerText = `RESEARCH SUMMARY: ${paper.journal ? paper.journal.toUpperCase() : 'SELECTION'}`;
-                                summaryPanel.querySelector('.reliability-label').innerText = `${reliability}/100`;
-                                summaryPanel.querySelector('.reference-label').innerText = `Active Reference: ${paper.title}`;
-
-
-                                summaryPanel.style.borderLeft = `2px solid ${textColor}`;
-                                summaryPanel.querySelector('.summary-panel-title').style.color = textColor;
-                            }
-
-                            // Update active sidebar border status
-                            bubble.querySelectorAll('.source-sidebar-card').forEach(c => c.style.border = '1px solid var(--border-subtle)');
-                            card.style.border = `1px solid ${textColor}`;
-                        });
-
-                        sidebarContainer.appendChild(card);
-                    });
-                } else {
-                    const destinationLink = data.source_link || data.pubmed_link || '#';
-                    sidebarContainer.innerHTML = `
-                        <div class="source-sidebar-card">
-                            <a class="source-title-link" href="${destinationLink}" target="_blank" rel="noopener noreferrer">${data.matched_paper || 'Clinical Consensus Reference'}</a>
-                            <div class="source-meta-row">
-                                <span class="source-journal">Core Database Evidence</span>
-                                <span class="source-reliability-tag" style="background: rgba(0, 223, 250, 0.15); color: var(--neon-cyan);">VERIFIED</span>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        } else {
-            content = text ? `${text}` : 'System failure processing message context.';
-        }
-
-        bubble.innerHTML = content;
+            stream.appendChild(card);
+        });
+    } else {
+        stream.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted);">No independent references attached.</div>';
     }
-
-    thread.appendChild(bubble);
-    thread.scrollTop = thread.scrollHeight;
 }
