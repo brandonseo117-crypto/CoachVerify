@@ -62,7 +62,7 @@
     <div class="app-container">
         <header class="app-header">
             <div class="app-title" style="cursor: pointer;" onclick="navigateTo('state-home')">CoachVerify</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Verified Sports Science Engine
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Sports Science Analyst
             </div>
         </header>
 
@@ -73,7 +73,7 @@
                     Elite performance tips translated into plain language for student-athletes, parents, and coaches.
                 </p>
                 <button class="submit-btn" style="padding: 14px 28px; font-size: 1rem; border-radius: 30px;"
-                    onclick="navigateTo('state-chat')">Open Assessment Console</button>
+                    onclick="navigateTo('state-chat')">Expand Your Sports Science Knowledge</button>
             </div>
         </div>
 
@@ -83,7 +83,7 @@
                 <div class="chat-history" id="chatHistory">
                     <div class="chat-bubble ai">
                         Hello! Ask me about any viral fitness claims, workout routines, or supplements you see online. I
-                        will instantly cross-reference them against peer-reviewed sports science databases.
+                        will instantly cross-reference them against peer-reviewed sports science research.
                     </div>
                 </div>
 
@@ -110,8 +110,8 @@
                     <form id="auditForm" onsubmit="submitAudit(event)">
                         <div class="input-group">
                             <input type="text" id="claimInput" class="athlete-input"
-                                placeholder="Type a trend or supplement claim here..." autocomplete="off">
-                            <button type="submit" id="submitButton" class="submit-btn">Verify</button>
+                                placeholder="Ask me anything about sports science!" autocomplete="off">
+                            <button type="submit" id="submitButton" class="submit-btn">Send</button>
                         </div>
                     </form>
                 </div>
@@ -137,7 +137,7 @@
                 </div>
 
                 <div>
-                    <div class="metric-header" style="margin-bottom: 10px;">Supporting Research Papers</div>
+                    <div class="metric-header" style="margin-bottom: 10px;">Supporting Literature</div>
                     <div id="papersStream"></div>
                 </div>
             </section>

@@ -13,6 +13,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# In-memory chat history store for the judging window
+CHAT_MEMORIES = {}
+
 
 @app.route('/')
 def index():
@@ -22,7 +25,7 @@ def index():
 API_key = os.getenv("gemini_key")
 client = genai.Client(api_key=API_key)
 
-# intent Routing Schema
+# intent routing schema
 
 
 class IntentSchema(BaseModel):
@@ -89,16 +92,35 @@ def audit_reliability():
         if not claim:
             return jsonify({"error": "Message content is required."}), 400
 
-        # routing check to determine if this is a research deep dive or a casual conversation, to optimize response style and database grounding
+        # Retrieve or initialize the session identity
+        session_id = user_data.get('session_id', 'anonymous_session')
+        if session_id not in CHAT_MEMORIES:
+            CHAT_MEMORIES[session_id] = []
+
+        session_history = CHAT_MEMORIES[session_id]
+
+        # Convert history into an injectable text string (last 6 exchanges max)
+        history_context = ""
+        if session_history:
+            history_context = "PAST CONVERSATION HISTORY:\n"
+            for msg in session_history[-6:]:
+                history_context += f"{msg['role']}: {msg['content']}\n"
+            history_context += "\n--- END OF HISTORY ---\n"
+
+        # Routing check to determine if this is a research deep dive or a casual conversation
         router_prompt = f"""
         Analyze the user's message and determine if they are initiating a science-backed trend analysis 
         on a specific compound, supplement, or recovery strategy, or if they are just chatting naturally or asking a casual follow-up.
         
+        Take into consideration the conversation history context to track pronouns like 'it', 'this', or 'that'.
+        
+        {history_context}
+        
         Athlete says: "{claim}"
         
         Select exactly one route options:
-        - "RESEARCH_DEEP_DIVE" (If they explicitly name a supplement, wellness trend, or require database records)
-        - "CASUAL_CONVERSATION" (If they say hello, thank you, or ask an open-ended conversational follow-up)
+        - "RESEARCH_DEEP_DIVE" (If they explicitly name a supplement, wellness trend, require database records, or ask contextual follow-ups about them)
+        - "CASUAL_CONVERSATION" (If they say hello, thank you, or ask an open-ended conversational greeting)
         """
 
         try:
@@ -118,13 +140,13 @@ def audit_reliability():
                 f"Routing check failed, defaulting to deep dive: {route_err}")
             chosen_route = "RESEARCH_DEEP_DIVE"
 
-        # execute route specific logic
-
+        # Execute route specific logic
         if chosen_route == "CASUAL_CONVERSATION":
-            # run lightweight casual chat prompt without database grounding, focused on friendly, clear communication
             chat_prompt = f"""
             You are CoachVerify. Answer this athlete's casual message or follow-up question in a friendly, 
             professional, and completely clear manner. Use plain English without jargon or data parameters.
+            
+            {history_context}
             
             Athlete says: "{claim}"
             """
@@ -139,9 +161,9 @@ def audit_reliability():
                 )
             )
         else:
-            # run your original deep dive database search pipeline
             prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
 Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
+Take into consideration the past conversation history context to resolve any contextual references or follow-up syntax.
 
 CRITICAL TONE & PLAIN-LANGUAGE STRUCTURAL DIRECTIVES:
 - Speak normally, professionally, and objectively. Do not use generic filler words, dramatic jargon, or sports-coach clichés.
@@ -152,6 +174,8 @@ CRITICAL TONE & PLAIN-LANGUAGE STRUCTURAL DIRECTIVES:
   * Do NOT say 'ingesting raw caustic compounds' -> Say 'swallowing highly concentrated dry powders'.
 - Keep your explanation to 2-3 direct sentences that move the user from uncertainty to clear, immediate action.
 - STIPULATION: Use standard alphanumeric text and punctuation only. Do not output any graphical emojis or pictorial symbols.
+
+{history_context}
 
 ATHLETE QUERY: {claim}
 
@@ -172,8 +196,7 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
                 )
             )
 
-        # clean up response
-
+        # Clean up response
         raw_text = ai_response.text.strip()
 
         if raw_text.startswith("```"):
@@ -192,6 +215,11 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
                 "error": "Response parsing failed",
                 "details": f"AI returned invalid JSON: {str(je)}"
             }), 500
+
+        # Save current loop to user session context memory store before responding
+        session_history.append({"role": "Athlete", "content": claim})
+        session_history.append(
+            {"role": "CoachVerify", "content": processed_result.get("audit_text", "")})
 
         return jsonify(processed_result), 200
 
