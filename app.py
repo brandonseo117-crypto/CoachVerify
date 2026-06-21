@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# In-memory chat history store for the judging window
+# in-memory chat history store for the judging window
 CHAT_MEMORIES = {}
 
 
@@ -92,14 +92,13 @@ def audit_reliability():
         if not claim:
             return jsonify({"error": "Message content is required."}), 400
 
-        # Retrieve or initialize the session identity
+        # unique user session
         session_id = user_data.get('session_id', 'anonymous_session')
         if session_id not in CHAT_MEMORIES:
             CHAT_MEMORIES[session_id] = []
 
         session_history = CHAT_MEMORIES[session_id]
 
-        # Convert history into an injectable text string (last 6 exchanges max)
         history_context = ""
         if session_history:
             history_context = "PAST CONVERSATION HISTORY:\n"
@@ -107,7 +106,7 @@ def audit_reliability():
                 history_context += f"{msg['role']}: {msg['content']}\n"
             history_context += "\n--- END OF HISTORY ---\n"
 
-        # Routing check to determine if this is a research deep dive or a casual conversation
+        # check to determine if this is a research deep dive or a casual conversation
         router_prompt = f"""
         Analyze the user's message and determine if they are initiating a science-backed trend analysis 
         on a specific compound, supplement, or recovery strategy, or if they are just chatting naturally or asking a casual follow-up.
@@ -140,7 +139,6 @@ def audit_reliability():
                 f"Routing check failed, defaulting to deep dive: {route_err}")
             chosen_route = "RESEARCH_DEEP_DIVE"
 
-        # Execute route specific logic
         if chosen_route == "CASUAL_CONVERSATION":
             chat_prompt = f"""
             You are CoachVerify. Answer this athlete's casual message or follow-up question in a friendly, 
@@ -161,7 +159,7 @@ def audit_reliability():
                 )
             )
         else:
-            prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
+            prompt = f"""You are CoachVerify, an advanced sports science research auditor engineered to synthesize analytical insights.
 Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
 Take into consideration the past conversation history context to resolve any contextual references or follow-up syntax.
 
@@ -196,9 +194,8 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
                 )
             )
 
-        # Clean up response
+        # clean up code blocks if present
         raw_text = ai_response.text.strip()
-
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()
             if lines[0].startswith("```json") or lines[0].startswith("```"):
@@ -216,10 +213,11 @@ RETURN SCHEMA FIELD REQUIREMENT MATCHING:
                 "details": f"AI returned invalid JSON: {str(je)}"
             }), 500
 
-        # Save current loop to user session context memory store before responding
         session_history.append({"role": "Athlete", "content": claim})
         session_history.append(
             {"role": "CoachVerify", "content": processed_result.get("audit_text", "")})
+
+        CHAT_MEMORIES[session_id] = session_history
 
         return jsonify(processed_result), 200
 

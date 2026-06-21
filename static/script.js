@@ -1,3 +1,8 @@
+if (!sessionStorage.getItem('cv_session_id')) {
+    sessionStorage.setItem('cv_session_id', 'session_' + Math.random().toString(36).substring(2, 11));
+}
+const currentSessionId = sessionStorage.getItem('cv_session_id');
+
 let isRequestPending = false;
 
 function navigateTo(stateId) {
@@ -45,17 +50,15 @@ async function submitAudit(event) {
 
     try {
         isRequestPending = true;
-        const submitButton = document.getElementById('submitButton');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.classList.add('disabled');
-        }
         if (inputElement) inputElement.disabled = true;
 
         const response = await fetch('/api/audit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ claim: claimText })
+            body: JSON.stringify({
+                claim: claimText,
+                session_id: currentSessionId // backend reads this to preserve context state
+            })
         });
 
         const data = await response.json();
@@ -88,7 +91,6 @@ function renderMetrics(data) {
     const sVal = document.getElementById('safetyVal');
     const pVal = document.getElementById('perfVal');
 
-    // Output integers explicitly structured out of 100 for readability
     sVal.textContent = data.safety_score !== undefined ? `${data.safety_score}/100` : '--';
     pVal.textContent = data.performance_score !== undefined ? `${data.performance_score}/100` : '--';
 
