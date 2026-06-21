@@ -27,7 +27,7 @@ document.getElementById('chatConsoleForm').addEventListener('submit', async (e) 
     thread.scrollTop = thread.scrollHeight;
 
     const payload = {
-        profile: 'Varsity Athlete',
+        profile: 'Student-Athlete',
         claim: userMessage,
         routine: 'Context requested within chat dialogue flow'
     };
@@ -94,7 +94,7 @@ function appendMessage(text, sender, data = null) {
             content += `
                 <div class="scientific-response-block" style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
                     <div class="consensus-summary-card" style="background: rgba(255, 255, 255, 0.02); border-left: 3px solid ${indicatorColor}; padding: 16px; border-radius: 4px 12px 12px 4px;">
-                        <span class="summary-header" style="font-family: monospace; font-size: 0.75rem; color: ${indicatorColor}; letter-spacing: 1px; font-weight: 700; display: block; margin-bottom: 6px;">SYSTEM SYNTHESIS CONSENSUS</span>
+                        <span class="summary-header" style="font-family: monospace; font-size: 0.75rem; color: ${indicatorColor}; letter-spacing: 1px; font-weight: 700; display: block; margin-bottom: 6px;">ASSESSMENT SUMMARY</span>
                         <p class="consensus-main-paragraph" style="margin: 0; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);">${data.audit_text || ''}</p>
                     </div>
 
@@ -129,8 +129,8 @@ function appendMessage(text, sender, data = null) {
 
             if (data.alternative) {
                 content += `
-                    <div class="clinical-pivot-box" style="margin-top: 12px; padding: 12px; background: rgba(0, 223, 250, 0.05); border: 1px dashed var(--neon-cyan); border-radius: 8px;">
-                        <span style="color: var(--neon-cyan); font-weight: 700; font-size: 0.8rem; font-family: monospace;">RECOMMENDED CLINICAL PIVOT</span>
+                    <div class="clinical-pivot-box" style="margin-top: 12px; padding: 12px; background: rgba(255, 184, 28, 0.04); border: 1px dashed var(--neon-cyan); border-radius: 8px;">
+                        <span style="color: var(--neon-cyan); font-weight: 700; font-size: 0.8rem; font-family: monospace;">RECOMMENDED ADJUSTMENT</span>
                         <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: var(--text-main); line-height: 1.4;">${data.alternative}</p>
                     </div>
                 `;
@@ -162,16 +162,16 @@ function appendMessage(text, sender, data = null) {
                         card.style.border = index === 0 ? `1px solid ${textColor}` : '1px solid var(--border-subtle)';
 
                         card.innerHTML = `
-                            <div class="source-title-link" style="font-weight:600; color:var(--text-main); margin-bottom:4px; font-size:0.85rem; line-height:1.3;">
-                                ${paper.title}
-                            </div>
-                            <div class="source-meta-row">
-                                <span class="source-journal" style="font-size:0.7rem; color:var(--text-muted);">${paper.journal || 'Sports Med Journal'}</span>
-                                <span class="source-reliability-tag" style="background: ${badgeColor}; color: ${textColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-family: monospace;">
-                                    RIGOR: ${reliability}%
-                                </span>
-                            </div>
-                        `;
+                                <div class="source-title-link" style="font-weight:600; color:var(--text-main); margin-bottom:4px; font-size:0.85rem; line-height:1.3;">
+                                    ${paper.title}
+                                </div>
+                                <div class="source-meta-row">
+                                    <span class="source-journal" style="font-size:0.7rem; color:var(--text-muted);">${paper.journal || 'Sports Med Journal'}</span>
+                                    <span class="source-reliability-tag" style="background: ${badgeColor}; color: ${textColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-family: monospace;">
+                                        RIGOR: ${reliability}%
+                                    </span>
+                                </div>
+                            `;
 
                         card.addEventListener('click', (e) => {
                             e.preventDefault();

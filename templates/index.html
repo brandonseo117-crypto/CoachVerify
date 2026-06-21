@@ -5,14 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CoachVerify - Varsity Performance Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
     <nav class="top-navbar">
-        <div class="nav-brand">COACH<span>VERIFY</span> // SYSTEM_v2.5</div>
+        <div class="nav-brand">ATHLETE<span>VERIFY</span></div>
         <div class="nav-status">
-            <span class="status-dot"></span> SECURE MATRIX LINK
+            <span class="status-dot"></span> Team Performance • Secure
         </div>
     </nav>
 
@@ -20,11 +21,11 @@
 
         <section id="state-home" class="view-state active-state">
             <div class="hero-content">
-                <div class="glitch-logo">COACH<span>VERIFY</span></div>
-                <h1 class="hero-title">Varsity Performance Portal</h1>
-                <p class="hero-subtitle">Real-time sports science audit and clinical research verification for
-                    competitive varsity athletes. Run immediate safety evaluations on active protocols.</p>
-                <button class="send-btn" onclick="navigateTo('state-chat')">Open Performance Console</button>
+                <div class="glitch-logo">ATHLETE<span>VERIFY</span></div>
+                <h1 class="hero-title">Team Performance Hub</h1>
+                <p class="hero-subtitle">Evidence-backed checks for supplements, training plans, and recovery routines —
+                    designed for student-athletes and coaches.</p>
+                <button class="send-btn" onclick="navigateTo('state-chat')">Open Assessment Console</button>
             </div>
         </section>
 
@@ -34,10 +35,9 @@
                 <div class="chat-container">
                     <div id="chatThread" class="chat-thread">
                         <div class="message-bubble coach">
-                            <p><strong>[SYSTEM INJECT]: Varsity Athlete Matrix Active.</strong></p>
-                            <p>Welcome to the validation console. Drop your current supplementation tier, training
-                                claim, or daily recovery routine below to cross-examine it against clinical research
-                                data.</p>
+                            <p><strong>[SYSTEM]: Athlete assessment ready.</strong></p>
+                            <p>Welcome. Paste a supplement, training claim, or recovery routine to compare against
+                                clinical evidence and safety guidance.</p>
                         </div>
                     </div>
 
@@ -49,9 +49,10 @@
                     </div>
 
                     <form id="chatConsoleForm" class="chat-input-bar">
-                        <input type="text" id="athleteMessageInput" placeholder="Ask Coach: 'Is dry-scooping safe?'..."
-                            autocomplete="off" required>
-                        <button type="submit" class="send-btn">Send</button>
+                        <input type="text" id="athleteMessageInput"
+                            placeholder="Ask: 'Is this supplement safe for college athletes?'" autocomplete="off"
+                            required>
+                        <button type="submit" class="send-btn">Analyze</button>
                     </form>
                 </div>
 

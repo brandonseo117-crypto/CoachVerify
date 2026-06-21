@@ -84,11 +84,15 @@ def audit_reliability():
         prompt = f"""You are CoachVerify, an advanced sports science verification engine engineered to match the data depth of Consensus AI.
 Analyze the athlete's query objectively and exhaustively fill out the schema fields using data-grounded science from the provided database.
 
-CRITICAL TONE & STRUCTURAL DIRECTIVES:
-- Speak normally, professionally, and clinically. Never use generic filler words, dramatic jargon, or sports-coach clichés.
-- Talk like a premier sports scientist: calm, authoritative, precise, and objective.
-- STIPULATION: Use standard alphanumeric text and punctuation only. Do not output any graphical emojis or pictorial symbols in any text field.
-- CORE TASK: For every object item in the 'individual_papers' array, you must extract or logically map the specific 'sample_size', 'target_cohort', 'study_type', and 'publication_year' metrics from the database source entry. Do not use generic fallback text if specific data is available.
+CRITICAL TONE & PLAIN-LANGUAGE STRUCTURAL DIRECTIVES:
+- Speak normally, professionally, and objectively[cite: 35, 38]. Do not use generic filler words, dramatic jargon, or sports-coach clichés.
+- MANDATE: The 'audit_text' field must be written in clear, plain language accessible to a high school student or parent under stress[cite: 8, 35, 91]. 
+- Avoid dense academic or medical jargon. If a technical term is found in the database, translate it into everyday English:
+  * Do NOT say 'acute myocardial infarction' -> Say 'a sudden, severe heart attack'.
+  * Do NOT say 'esophageal damage or ulcerations' -> Say 'painful throat burns and sores'.
+  * Do NOT say 'ingesting raw caustic compounds' -> Say 'swallowing highly concentrated dry powders'.
+- Keep your explanation to 2-3 direct sentences that move the user from uncertainty to clear, immediate action[cite: 8, 19, 92].
+- STIPULATION: Use standard alphanumeric text and punctuation only. Do not output any graphical emojis or pictorial symbols.
 
 ATHLETE QUERY: {claim}
 
