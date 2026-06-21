@@ -13,7 +13,6 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# in-memory chat history store for the judging window
 CHAT_MEMORIES = {}
 
 
