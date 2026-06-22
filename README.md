@@ -72,6 +72,6 @@ Instead of relying on generic public LLMs that are prone to hallucinating or del
 
 ---
 
-## 📈 What's Next for CoachVerify
+## What's Next
 * **Live API Ecosystems:** Scale the static pilot DB by migrating to active endpoints with open-access public research repositories (e.g., Consensus, Semantic Scholar APIs).
 * **Automated Video Parsing:** Allow users to paste a direct TikTok or Instagram Reel URL, leverage Whisper/OCR text extraction, and automatically audit the spoken words or caption claims against medical reality.
